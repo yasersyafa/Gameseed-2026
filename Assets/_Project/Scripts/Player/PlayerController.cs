@@ -27,6 +27,7 @@ public class PlayerController : MonoBehaviour
     
     private bool _isDashing;
     private bool _canDash = true;
+    private int _playerIndex;
 
     private void Awake()
     {
@@ -59,6 +60,12 @@ public class PlayerController : MonoBehaviour
 
         MovePlayer();
         RotatePlayer();
+    }
+
+    public void Init(int index)
+    {
+        _playerIndex = index;
+        gameObject.name = $"Player {index + 1}";
     }
 
     private void MovePlayer()
