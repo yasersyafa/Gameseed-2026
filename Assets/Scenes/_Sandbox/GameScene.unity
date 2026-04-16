@@ -132,9 +132,9 @@ GameObject:
   - component: {fileID: 47145967}
   - component: {fileID: 47145966}
   - component: {fileID: 47145969}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Player1
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -193,6 +193,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
   moveSpeed: 10
   rotationSpeed: 15
+  dashForce: 25
+  dashDuration: 0.2
+  dashCooldown: 1
+  boomerangPrefab: {fileID: 7365367695378082830, guid: 62e6de90fdcfc413590026f8c64c1a3a, type: 3}
+  throwPoint: {fileID: 1393085181}
+  throwForce: 20
 --- !u!54 &47145968
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -247,7 +253,7 @@ MonoBehaviour:
   m_ActionEvents: []
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: Keyboard&Mouse
-  m_DefaultActionMap: df70fa95-8a34-4494-b137-73ab6b9c7d37
+  m_DefaultActionMap: Player
   m_SplitScreenIndex: -1
   m_Camera: {fileID: 0}
 --- !u!43 &126270182
@@ -1837,7 +1843,7 @@ GameObject:
   - component: {fileID: 821714344}
   m_Layer: 0
   m_Name: Wall (2)
-  m_TagString: Untagged
+  m_TagString: Wall
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -2549,7 +2555,7 @@ GameObject:
   - component: {fileID: 1231134581}
   m_Layer: 0
   m_Name: Wall (1)
-  m_TagString: Untagged
+  m_TagString: Wall
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -2898,7 +2904,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1393085181}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: BoomerangSpawnPoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2914,7 +2920,7 @@ Transform:
   m_GameObject: {fileID: 1393085180}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0.8}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2936,7 +2942,7 @@ GameObject:
   - component: {fileID: 1400667822}
   m_Layer: 0
   m_Name: Wall
-  m_TagString: Untagged
+  m_TagString: Wall
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -3353,7 +3359,7 @@ GameObject:
   - component: {fileID: 1459410795}
   - component: {fileID: 1459410794}
   - component: {fileID: 1459410793}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Visual
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3467,7 +3473,7 @@ GameObject:
   - component: {fileID: 1482642364}
   - component: {fileID: 1482642363}
   - component: {fileID: 1482642362}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Visual
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3676,7 +3682,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1564473689}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: BoomerangSpawnPoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3692,7 +3698,7 @@ Transform:
   m_GameObject: {fileID: 1564473688}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0.8}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3881,9 +3887,9 @@ GameObject:
   - component: {fileID: 1869455817}
   - component: {fileID: 1869455816}
   - component: {fileID: 1869455819}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Player2
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -3942,6 +3948,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
   moveSpeed: 10
   rotationSpeed: 15
+  dashForce: 25
+  dashDuration: 0.2
+  dashCooldown: 1
+  boomerangPrefab: {fileID: 7365367695378082830, guid: 62e6de90fdcfc413590026f8c64c1a3a, type: 3}
+  throwPoint: {fileID: 1564473689}
+  throwForce: 20
 --- !u!54 &1869455818
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -4015,7 +4027,7 @@ GameObject:
   - component: {fileID: 1943099006}
   m_Layer: 0
   m_Name: Wall (3)
-  m_TagString: Untagged
+  m_TagString: Wall
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
