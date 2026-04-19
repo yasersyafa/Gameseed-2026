@@ -5,12 +5,10 @@ public class Boomerang : MonoBehaviour
     private enum BoomerangState { Flying, Returning }
     private BoomerangState _state = BoomerangState.Flying;
 
-    private Transform _owner;
+    private Transform        _owner;
     private PlayerController _ownerController;
-    private Collider _ownerCollider;   // ← tambah ini
-    private Collider _myCollider;      // ← tambah ini
-    private Vector3 _velocity;
-    private float _speed;
+    private Vector3          _velocity;
+    private float            _speed;
 
     [Header("Flight")]
     [SerializeField] private float maxDistance = 10f;
@@ -25,18 +23,17 @@ public class Boomerang : MonoBehaviour
     [SerializeField] private string playerTag = "Player";
 
     private Vector3 _spawnPosition;
-    private int _bounceCount = 0;
+    private int     _bounceCount = 0;
 
     private Rigidbody _rb;
 
     private void Awake()
     {
         _rb = GetComponent<Rigidbody>();
-        _myCollider = GetComponent<Collider>();   // ← tambah ini
-        _rb.useGravity = false;
-        _rb.linearDamping = 0f;
-        _rb.angularDamping = 0f;
-        _rb.interpolation = RigidbodyInterpolation.Interpolate;
+        _rb.useGravity      = false;
+        _rb.linearDamping   = 0f;
+        _rb.angularDamping  = 0f;
+        _rb.interpolation   = RigidbodyInterpolation.Interpolate;
         _rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
         _rb.constraints = RigidbodyConstraints.FreezePositionY
                         | RigidbodyConstraints.FreezeRotationX
@@ -47,18 +44,11 @@ public class Boomerang : MonoBehaviour
     {
         _owner           = owner;
         _ownerController = owner.GetComponent<PlayerController>();
-        _ownerCollider   = owner.GetComponent<Collider>();   // ← tambah ini
         _velocity        = direction.normalized * force;
         _speed           = force;
         _spawnPosition   = transform.position;
         _state           = BoomerangState.Flying;
         _bounceCount     = 0;
-
-        // FIX: Matikan collision dengan owner sejak awal.
-        // Ini mencegah boomerang langsung ke-catch karena overlap di frame pertama,
-        // sekaligus memastikan owner tidak bisa terkena boomerangnya sendiri saat Flying.
-        if (_ownerCollider != null && _myCollider != null)
-            Physics.IgnoreCollision(_myCollider, _ownerCollider, true);
     }
 
     private void FixedUpdate()
@@ -76,19 +66,13 @@ public class Boomerang : MonoBehaviour
     {
         _rb.MovePosition(_rb.position + _velocity * Time.fixedDeltaTime);
 
-        float distFromSpawn = Vector3.Distance(_rb.position, _spawnPosition);
-        if (distFromSpawn >= maxDistance)
+        if (Vector3.Distance(_rb.position, _spawnPosition) >= maxDistance)
             StartReturning();
     }
 
     private void StartReturning()
     {
         _state = BoomerangState.Returning;
-
-        // FIX: Aktifkan kembali collision dengan owner saat boomerang mulai balik,
-        // supaya catch via OnCollisionEnter tetap bekerja normal.
-        if (_ownerCollider != null && _myCollider != null)
-            Physics.IgnoreCollision(_myCollider, _ownerCollider, false);
     }
 
     private void HandleReturning()
@@ -96,7 +80,7 @@ public class Boomerang : MonoBehaviour
         if (_owner == null) { Destroy(gameObject); return; }
 
         Vector3 toOwner = _owner.position - _rb.position;
-        float dist      = toOwner.magnitude;
+        float   dist    = toOwner.magnitude;
 
         if (dist <= catchRadius)
         {
@@ -105,7 +89,11 @@ public class Boomerang : MonoBehaviour
             return;
         }
 
-        float dynamicSpeed = Mathf.Lerp(returnSpeed * 0.7f, returnSpeed * 1.3f, 1f - Mathf.Clamp01(dist / maxDistance));
+        float dynamicSpeed = Mathf.Lerp(
+            returnSpeed * 0.7f,
+            returnSpeed * 1.3f,
+            1f - Mathf.Clamp01(dist / maxDistance)
+        );
         _velocity = toOwner.normalized * dynamicSpeed;
         _rb.MovePosition(_rb.position + _velocity * Time.fixedDeltaTime);
     }
@@ -117,8 +105,7 @@ public class Boomerang : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        // Owner — saat Returning, collision sudah diaktifkan kembali → catch
-        // Saat Flying, collision masih di-ignore → blok ini tidak akan terpanggil untuk owner
+        // Owner catch — tidak akan false-trigger karena spawn sudah di luar
         if (collision.transform == _owner)
         {
             _ownerController.CatchBoomerang();

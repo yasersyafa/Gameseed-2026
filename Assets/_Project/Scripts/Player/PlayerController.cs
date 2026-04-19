@@ -17,7 +17,8 @@ public class PlayerController : MonoBehaviour
     [Header("Boomerang Settings")]
     [SerializeField] private GameObject boomerangPrefab;
     [SerializeField] private Transform  throwPoint;
-    [SerializeField] private float      throwForce = 20f;
+    [SerializeField] private float throwForce = 20f;
+    [SerializeField] private float spawnOffset = 1.2f;
 
     private bool _hasBoomerang = true;
     private Rigidbody _rb;
@@ -114,10 +115,12 @@ public class PlayerController : MonoBehaviour
     {
         _hasBoomerang = false;
 
-        GameObject boomObj   = Instantiate(boomerangPrefab, throwPoint.position, Quaternion.identity);
+        // Selalu spawn di depan arah gerak, bukan di throwPoint yang posisinya fixed
+        Vector3 spawnPos = transform.position + _lastMoveDirection.normalized * spawnOffset;
+        
+        GameObject boomObj    = Instantiate(boomerangPrefab, spawnPos, Quaternion.identity);
         Boomerang  boomScript = boomObj.GetComponent<Boomerang>();
 
-        // FIX BUG 2: Selalu pakai _lastMoveDirection yang dijamin tidak pernah zero
         boomScript.Launch(this.transform, _lastMoveDirection, throwForce);
     }
 
