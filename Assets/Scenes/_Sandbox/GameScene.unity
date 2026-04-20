@@ -3300,12 +3300,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachineGroupFraming
   FramingMode: 2
-  FramingSize: 0.6
+  FramingSize: 0.4
   CenterOffset: {x: 0, y: 0}
   Damping: 3
   SizeAdjustment: 0
   LateralAdjustment: 0
-  FovRange: {x: 30, y: 40}
+  FovRange: {x: 40, y: 60}
   DollyRange: {x: -100, y: 100}
   OrthoSizeRange: {x: 1, y: 1000}
 --- !u!114 &1542131968
@@ -3381,7 +3381,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CinemachineCameraManager
   targetGroup: {fileID: 360598739}
   targetWeight: 1
-  targetRadius: 2
+  targetRadius: 5
 --- !u!1 &1669384194
 GameObject:
   m_ObjectHideFlags: 0
@@ -3558,7 +3558,7 @@ Camera:
     height: 1
   near clip plane: 0.3
   far clip plane: 1000
-  field of view: 30
+  field of view: 40
   orthographic: 0
   orthographic size: 5
   m_Depth: -1
