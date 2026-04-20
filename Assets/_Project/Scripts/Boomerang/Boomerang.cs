@@ -9,6 +9,7 @@ public class Boomerang : MonoBehaviour
     private PlayerController _ownerController;
     private Vector3          _velocity;
     private float            _speed;
+    private bool _hasHit = false;
 
     [Header("Flight")]
     [SerializeField] private float maxDistance = 10f;
@@ -49,6 +50,7 @@ public class Boomerang : MonoBehaviour
         _spawnPosition   = transform.position;
         _state           = BoomerangState.Flying;
         _bounceCount     = 0;
+        _hasHit = false;
     }
 
     private void FixedUpdate()
@@ -105,6 +107,8 @@ public class Boomerang : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
+        if (_hasHit) return;
+
         // Owner catch — tidak akan false-trigger karena spawn sudah di luar
         if (collision.transform == _owner)
         {
@@ -116,8 +120,10 @@ public class Boomerang : MonoBehaviour
         // Kill player lain
         if (collision.gameObject.CompareTag(playerTag))
         {
+            _hasHit = true;
             collision.gameObject.GetComponent<PlayerController>()?.OnHitByBoomerang();
             Destroy(gameObject);
+            _ownerController.CatchBoomerang();
             return;
         }
 

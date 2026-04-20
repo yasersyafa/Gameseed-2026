@@ -3429,7 +3429,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Unity.InputSystem::UnityEngine.InputSystem.PlayerInputManager
   m_NotificationBehavior: 0
-  m_MaxPlayerCount: 4
+  m_MaxPlayerCount: 2
   m_AllowJoining: 1
   m_JoinBehavior: 0
   m_PlayerJoinedEvent:
@@ -3496,12 +3496,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LivesSystem
   livesPerPlayer: 2
-  respawnDelay: 3
-  spawnPoints:
-  - {fileID: 1440303944}
-  - {fileID: 1857490999}
-  - {fileID: 1492049832}
-  - {fileID: 325072281}
+  respawnDelay: 2
 --- !u!1 &1829815425
 GameObject:
   m_ObjectHideFlags: 0

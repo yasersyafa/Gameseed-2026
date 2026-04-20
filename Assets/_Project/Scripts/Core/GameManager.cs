@@ -23,6 +23,23 @@ public class GameManager : MonoBehaviour
         _inputManager = GetComponent<PlayerInputManager>();
     }
 
+    private void Start()
+    {
+        _inputManager.JoinPlayer(
+            playerIndex: 0,
+            splitScreenIndex: -1,
+            controlScheme: "WASD",
+            pairWithDevice: Keyboard.current
+        );
+
+        _inputManager.JoinPlayer(
+            playerIndex: 1,
+            splitScreenIndex: -1,
+            controlScheme: "ArrowKeys",
+            pairWithDevice: Keyboard.current
+        );
+    }
+
     private void OnPlayerJoined(PlayerInput playerInput)
     {
         int index = _playerCount;
@@ -59,7 +76,7 @@ public class GameManager : MonoBehaviour
 
         // FIX BUG 3: Baru daftarkan player ke LivesSystem sekarang,
         // hanya sekali, setelah jumlah player final sudah diketahui.
-        LivesSystem.Instance?.RegisterPlayers(_playerCount);
+        LivesSystem.Instance?.RegisterPlayers(_playerCount, spawnPoints);
 
         Debug.Log("Game Started!");
     }

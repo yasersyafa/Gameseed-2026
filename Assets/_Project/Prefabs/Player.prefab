@@ -229,6 +229,7 @@ MonoBehaviour:
   boomerangPrefab: {fileID: 7365367695378082830, guid: 62e6de90fdcfc413590026f8c64c1a3a, type: 3}
   throwPoint: {fileID: 1634103212899138788}
   throwForce: 20
+  spawnOffset: 1.2
 --- !u!136 &6657089563190869972
 CapsuleCollider:
   m_ObjectHideFlags: 0
