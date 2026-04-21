@@ -25,9 +25,6 @@ public class PlayerController : MonoBehaviour
     private Vector2 _moveInput;
     private Vector3 _moveDirection;
 
-    // FIX BUG 2: Simpan arah terakhir yang valid
-    // Di-update hanya saat ada input aktif, sehingga saat player diam
-    // dan melempar, tetap menggunakan arah terakhir — bukan Vector3.zero
     private Vector3 _lastMoveDirection;
 
     private bool _isDashing;
@@ -40,10 +37,10 @@ public class PlayerController : MonoBehaviour
         _rb.freezeRotation = true;
         _rb.useGravity = false;
 
-        // FIX BUG 2: Default arah forward supaya throw pertama tidak salah
         _lastMoveDirection = transform.forward;
     }
 
+#region Player Input Methods
     public void OnMove(InputValue value) => _moveInput = value.Get<Vector2>();
 
     public void OnDash(InputValue value)
@@ -57,6 +54,7 @@ public class PlayerController : MonoBehaviour
         if (value.isPressed && _hasBoomerang && !_isDashing)
             ThrowBoomerang();
     }
+#endregion
 
     private void FixedUpdate()
     {
@@ -65,11 +63,14 @@ public class PlayerController : MonoBehaviour
         RotatePlayer();
     }
 
+    /// <summary>
+    /// run whenever player spawned
+    /// </summary>
+    /// <param name="index"></param>
     public void Init(int index)
     {
         _playerIndex       = index;
         gameObject.name    = $"Player {index + 1}";
-        // FIX BUG 2: Sync default arah dengan transform setelah di-spawn
         _lastMoveDirection = transform.forward;
     }
 
@@ -77,7 +78,6 @@ public class PlayerController : MonoBehaviour
     {
         _moveDirection = new Vector3(_moveInput.x, 0f, _moveInput.y).normalized;
 
-        // FIX BUG 2: Update _lastMoveDirection hanya kalau ada input aktif
         if (_moveDirection != Vector3.zero)
             _lastMoveDirection = _moveDirection;
 
@@ -122,6 +122,7 @@ public class PlayerController : MonoBehaviour
         Boomerang  boomScript = boomObj.GetComponent<Boomerang>();
 
         boomScript.Launch(this.transform, _lastMoveDirection, throwForce);
+        boomScript.SetTrailColor(GetComponentInChildren<Renderer>()?.material.color ?? Color.white);
     }
 
     public void CatchBoomerang()
@@ -132,6 +133,7 @@ public class PlayerController : MonoBehaviour
     public void OnHitByBoomerang()
     {
         if (!gameObject.activeSelf) return;
+        CinemachineCameraManager.Instance?.ShakeCamera(1.5f);
         LivesSystem.Instance?.PlayerDied(_playerIndex, this);
     }
 
@@ -140,7 +142,7 @@ public class PlayerController : MonoBehaviour
         _hasBoomerang      = true;
         _isDashing         = false;
         _canDash           = true;
-        _lastMoveDirection = transform.forward; // FIX BUG 2: Reset arah juga
+        _lastMoveDirection = transform.forward;
         _rb.linearVelocity = Vector3.zero;
     }
 }

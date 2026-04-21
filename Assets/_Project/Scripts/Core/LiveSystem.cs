@@ -31,7 +31,7 @@ public class LivesSystem : MonoBehaviour
         for (int i = 0; i < count; i++)
             _lives[i] = livesPerPlayer;
 
-        Debug.Log($"LivesSystem: {count} player, masing-masing {livesPerPlayer} nyawa.");
+        // Debug.Log($"LivesSystem: {count} player, masing-masing {livesPerPlayer} nyawa.");
     }
 
     // Dipanggil PlayerController.OnHitByBoomerang()
@@ -40,12 +40,12 @@ public class LivesSystem : MonoBehaviour
         if (_gameOver) return;
         if (_lives == null)
         {
-            Debug.LogWarning("LivesSystem: RegisterPlayers belum dipanggil!");
+            // Debug.LogWarning("LivesSystem: RegisterPlayers belum dipanggil!");
             return;
         }
 
         _lives[playerIndex]--;
-        Debug.Log($"Player {playerIndex + 1} mati! Sisa nyawa: {_lives[playerIndex]}");
+        // Debug.Log($"Player {playerIndex + 1} mati! Sisa nyawa: {_lives[playerIndex]}");
 
         if (_lives[playerIndex] <= 0)
         {
@@ -87,7 +87,7 @@ public class LivesSystem : MonoBehaviour
         controller.enabled       = true;
         controller.ResetState();
 
-        Debug.Log($"Player {index + 1} respawn! Sisa nyawa: {_lives[index]}");
+        // Debug.Log($"Player {index + 1} respawn! Sisa nyawa: {_lives[index]}");
     }
 
     private void CheckWinCondition()
@@ -102,7 +102,7 @@ public class LivesSystem : MonoBehaviour
         {
             if (p.gameObject.activeSelf)
             {
-                Debug.Log($"=== {p.name} MENANG! ===");
+                // Debug.Log($"=== {p.name} MENANG! ===");
                 break;
             }
         }

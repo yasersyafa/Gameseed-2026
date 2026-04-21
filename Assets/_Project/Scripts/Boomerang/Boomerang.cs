@@ -5,10 +5,10 @@ public class Boomerang : MonoBehaviour
     private enum BoomerangState { Flying, Returning }
     private BoomerangState _state = BoomerangState.Flying;
 
-    private Transform        _owner;
+    private Transform _owner;
     private PlayerController _ownerController;
-    private Vector3          _velocity;
-    private float            _speed;
+    private Vector3 _velocity;
+    private float _speed;
     private bool _hasHit = false;
 
     [Header("Flight")]
@@ -100,6 +100,19 @@ public class Boomerang : MonoBehaviour
         _rb.MovePosition(_rb.position + _velocity * Time.fixedDeltaTime);
     }
 
+    public void SetTrailColor(Color color)
+    {
+        var trail = GetComponent<TrailRenderer>();
+        if (trail == null) return;
+
+        var gradient = new Gradient();
+        gradient.SetKeys(
+            new GradientColorKey[]  { new(color, 0f), new(color, 1f) },
+            new GradientAlphaKey[]  { new(1f, 0f),    new(0f, 1f)   }
+        );
+        trail.colorGradient = gradient;
+    }
+
     private void SpinSelf()
     {
         transform.Rotate(Vector3.up, spinSpeed * Time.deltaTime, Space.World);
@@ -109,7 +122,6 @@ public class Boomerang : MonoBehaviour
     {
         if (_hasHit) return;
 
-        // Owner catch — tidak akan false-trigger karena spawn sudah di luar
         if (collision.transform == _owner)
         {
             _ownerController.CatchBoomerang();
@@ -117,7 +129,6 @@ public class Boomerang : MonoBehaviour
             return;
         }
 
-        // Kill player lain
         if (collision.gameObject.CompareTag(playerTag))
         {
             _hasHit = true;
