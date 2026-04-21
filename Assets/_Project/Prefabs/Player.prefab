@@ -231,6 +231,8 @@ MonoBehaviour:
   throwPoint: {fileID: 1634103212899138788}
   throwForce: 20
   spawnOffset: 1.2
+  visual: {fileID: 3920819264428635774}
+  deathParticlePrefab: {fileID: 104829970813648393, guid: d3015b7eea383f64d8b81f965cc466e7, type: 3}
 --- !u!136 &6657089563190869972
 CapsuleCollider:
   m_ObjectHideFlags: 0

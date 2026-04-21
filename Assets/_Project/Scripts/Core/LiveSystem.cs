@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class LivesSystem : MonoBehaviour
@@ -20,7 +21,6 @@ public class LivesSystem : MonoBehaviour
         Instance = this;
     }
 
-    // Dipanggil GameManager.StartGame() setelah semua player join
     public void RegisterPlayers(int count, Transform[] spawnPoints)
     {
         _spawnPoints  = spawnPoints;
@@ -66,14 +66,14 @@ public class LivesSystem : MonoBehaviour
     {
         var rb   = controller.GetComponent<Rigidbody>();
         var col  = controller.GetComponent<Collider>();
-        var rend = controller.GetComponentInChildren<Renderer>();
+        var rend = controller.visual;
 
         if (rb)   rb.isKinematic = true;
         if (col)  col.enabled    = false;
         if (rend) rend.enabled   = false;
         controller.enabled       = false;
 
-        yield return new WaitForSeconds(respawnDelay);
+        yield return YieldCollection.WaitForSeconds(respawnDelay);
 
 
         if (_gameOver || _lives[index] <= 0) yield break;
@@ -115,4 +115,42 @@ public class LivesSystem : MonoBehaviour
         if (_lives == null || playerIndex >= _lives.Length) return 0;
         return _lives[playerIndex];
     }
+}
+
+public static class YieldCollection
+{
+    // ── WaitForSeconds Cache ──────────────────────────────────────────────────
+
+    private static readonly Dictionary<float, WaitForSeconds> _waitForSeconds = new();
+    private static readonly Dictionary<float, WaitForSecondsRealtime> _waitForSecondsRealtime = new();
+
+    public static WaitForSeconds WaitForSeconds(float seconds)
+    {
+        if (!_waitForSeconds.TryGetValue(seconds, out var wait))
+        {
+            wait = new WaitForSeconds(seconds);
+            _waitForSeconds[seconds] = wait;
+        }
+        return wait;
+    }
+
+    public static WaitForSecondsRealtime WaitForSecondsRealtime(float seconds)
+    {
+        if (!_waitForSecondsRealtime.TryGetValue(seconds, out var wait))
+        {
+            wait = new WaitForSecondsRealtime(seconds);
+            _waitForSecondsRealtime[seconds] = wait;
+        }
+        return wait;
+    }
+
+    // ── Singleton Yields ──────────────────────────────────────────────────────
+
+    public static readonly WaitForEndOfFrame EndOfFrame = new();
+    public static readonly WaitForFixedUpdate FixedUpdate = new();
+
+    // ── WaitUntil / WaitWhile ──────────────────
+
+    public static WaitUntil Until(System.Func<bool> predicate) => new(predicate);
+    public static WaitWhile While(System.Func<bool> predicate) => new(predicate);
 }

@@ -20,6 +20,12 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float throwForce = 20f;
     [SerializeField] private float spawnOffset = 1.2f;
 
+    [Header("Renderer")]
+    public Renderer visual;
+
+    [Header("Effects")]
+    [SerializeField] private GameObject deathParticlePrefab;
+
     private bool _hasBoomerang = true;
     private Rigidbody _rb;
     private Vector2 _moveInput;
@@ -103,12 +109,25 @@ public class PlayerController : MonoBehaviour
         Vector3 dashDir = _moveDirection != Vector3.zero ? _moveDirection : _lastMoveDirection;
         _rb.linearVelocity = dashDir * dashForce;
 
-        yield return new WaitForSeconds(dashDuration);
+        yield return YieldCollection.WaitForSeconds(dashDuration);
         _isDashing = false;
         _rb.linearVelocity = Vector3.zero;
 
-        yield return new WaitForSeconds(dashCooldown);
+        yield return YieldCollection.WaitForSeconds(dashCooldown);
         _canDash = true;
+    }
+
+    private IEnumerator FlashRoutine()
+    {
+        if (visual == null) yield break;
+
+        // Berkedip 5x selama 1.5 detik
+        for (int i = 0; i < 10; i++)
+        {
+            visual.enabled = !visual.enabled;
+            yield return YieldCollection.WaitForSeconds(0.05f);
+        }
+        visual.enabled = true;
     }
 
     private void ThrowBoomerang()
@@ -133,6 +152,13 @@ public class PlayerController : MonoBehaviour
     public void OnHitByBoomerang()
     {
         if (!gameObject.activeSelf) return;
+
+        if (deathParticlePrefab != null)
+        {
+            GameObject particle = Instantiate(deathParticlePrefab, transform.position, Quaternion.identity);
+            Destroy(particle, 2f);
+        }
+
         CinemachineCameraManager.Instance?.ShakeCamera(1.5f);
         LivesSystem.Instance?.PlayerDied(_playerIndex, this);
     }
@@ -144,5 +170,6 @@ public class PlayerController : MonoBehaviour
         _canDash           = true;
         _lastMoveDirection = transform.forward;
         _rb.linearVelocity = Vector3.zero;
+        StartCoroutine(FlashRoutine());
     }
 }
