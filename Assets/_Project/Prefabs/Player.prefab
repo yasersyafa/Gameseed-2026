@@ -229,7 +229,7 @@ MonoBehaviour:
   dashCooldown: 1
   boomerangPrefab: {fileID: 7365367695378082830, guid: 62e6de90fdcfc413590026f8c64c1a3a, type: 3}
   throwPoint: {fileID: 1634103212899138788}
-  throwForce: 20
+  throwForce: 10
   spawnOffset: 1.2
   visual: {fileID: 3920819264428635774}
   deathParticlePrefab: {fileID: 104829970813648393, guid: d3015b7eea383f64d8b81f965cc466e7, type: 3}

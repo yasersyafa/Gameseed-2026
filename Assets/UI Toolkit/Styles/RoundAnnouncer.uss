@@ -1,1 +1,48 @@
-VisualElement {}
+VisualElement {
+}
+
+.playerLabel {
+    font-size: 36px;
+    -unity-text-align: middle-left;
+    -unity-text-generator: standard;
+    -unity-font-definition: resource("FlatSkin/Font/Roboto-Black");
+}
+
+#topSection {
+    flex-direction: row;
+    align-content: auto;
+    align-self: auto;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding-top: 25px;
+    padding-right: 50px;
+    padding-bottom: 25px;
+    padding-left: 50px;
+    opacity: 1;
+    position: absolute;
+    width: 100%;
+}
+
+.button {
+    min-width: 450px;
+    min-height: 100px;
+    -unity-font-definition: url("project://database/Assets/UI%20Toolkit/UnityThemes/UnityDefaultRuntimeTheme.tss?fileID=2230732570650464555&guid=697c6f4c1fb6e416193c1573a28a9292&type=3#NotInter-Regular");
+    font-size: 32px;
+    -unity-font-style: bold;
+    flex-grow: 0;
+    -unity-text-outline-width: 0;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    border-bottom-right-radius: 6px;
+    border-bottom-left-radius: 6px;
+}
+
+.button:hover {
+    scale: 1.1 1.1 1.1;
+    rotate: 5deg;
+    transition-property: scale, rotate;
+    transition-duration: 0.15s, 0.5s;
+    transition-timing-function: ease-in-out-bounce, ease-in-out-bounce;
+}
+
+

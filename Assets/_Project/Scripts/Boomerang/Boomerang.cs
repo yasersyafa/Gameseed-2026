@@ -19,9 +19,13 @@ public class Boomerang : MonoBehaviour
 
     [Header("Spin")]
     [SerializeField] private float spinSpeed = 720f;
+    [SerializeField] private float lateralCurveStrength = 3f;
 
     [Header("Kill")]
     [SerializeField] private string playerTag = "Player";
+
+    [Header("Visual Effect")]
+    [SerializeField] private TrailRenderer trail;
 
     private Vector3 _spawnPosition;
     private int     _bounceCount = 0;
@@ -75,6 +79,13 @@ public class Boomerang : MonoBehaviour
     private void StartReturning()
     {
         _state = BoomerangState.Returning;
+
+        Vector3 lateral = Vector3.Cross(
+            (_owner.position - _rb.position).normalized,
+            Vector3.up
+        ).normalized;
+
+        _velocity += lateral * lateralCurveStrength;
     }
 
     private void HandleReturning()
@@ -91,18 +102,29 @@ public class Boomerang : MonoBehaviour
             return;
         }
 
-        float dynamicSpeed = Mathf.Lerp(
-            returnSpeed * 0.7f,
-            returnSpeed * 1.3f,
-            1f - Mathf.Clamp01(dist / maxDistance)
+        Vector3 desiredVelocity = toOwner.normalized * returnSpeed;
+        float steerStrength     = Mathf.Lerp(1f, 8f, 1f - Mathf.Clamp01(dist / maxDistance));
+
+        _velocity = Vector3.MoveTowards(
+            _velocity,
+            desiredVelocity,
+            steerStrength * returnSpeed * Time.fixedDeltaTime
         );
-        _velocity = toOwner.normalized * dynamicSpeed;
+
+        _velocity = _velocity.normalized * returnSpeed;
+
+        // float dynamicSpeed = Mathf.Lerp(
+        //     returnSpeed * 0.7f,
+        //     returnSpeed * 1.3f,
+        //     1f - Mathf.Clamp01(dist / maxDistance)
+        // );
+        // _velocity = toOwner.normalized * dynamicSpeed;
+
         _rb.MovePosition(_rb.position + _velocity * Time.fixedDeltaTime);
     }
 
     public void SetTrailColor(Color color)
     {
-        var trail = GetComponent<TrailRenderer>();
         if (trail == null) return;
 
         var gradient = new Gradient();

@@ -1,0 +1,19 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/UI%20Toolkit/Styles/RoundAnnouncer.uss?fileID=7433441132597879392&amp;guid=308fea73990c449339ea138d0a4f0a7f&amp;type=3#RoundAnnouncer"/>
+    <ui:VisualElement name="container" style="flex-grow: 1;">
+        <ui:VisualElement name="topSection" style="flex-grow: 1;">
+            <ui:VisualElement name="playerList" style="flex-grow: 1;">
+                <ui:Label text="Label" class="playerLabel"/>
+                <ui:Label text="Label" class="playerLabel"/>
+                <ui:Label text="Label" class="playerLabel"/>
+                <ui:Label text="Label" class="playerLabel"/>
+            </ui:VisualElement>
+            <ui:Button text="||" name="pause" selectable="true" focusable="true" class="button" style="min-width: auto; min-height: auto; width: 75px; height: 75px; aspect-ratio: 1;"/>
+        </ui:VisualElement>
+        <ui:VisualElement name="pausePanel" class="flexGap" style="flex-grow: 1; align-items: center; justify-content: center; visibility: hidden; flex-basis: auto; flex-shrink: 1; align-self: center; align-content: center; padding-top: 0; padding-bottom: 0;">
+            <ui:Button text="Resume" name="resume" selectable="true" focusable="true" class="button" style="margin-bottom: 20px;"/>
+            <ui:Button text="Restart" name="restart" selectable="true" focusable="true" class="button" style="margin-top: 20px; margin-bottom: 20px;"/>
+            <ui:Button text="Exit" name="exit" selectable="true" focusable="true" class="button" style="margin-top: 20px; margin-bottom: 0;"/>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

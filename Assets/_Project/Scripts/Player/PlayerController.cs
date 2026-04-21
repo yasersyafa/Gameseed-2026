@@ -159,6 +159,7 @@ public class PlayerController : MonoBehaviour
             Destroy(particle, 2f);
         }
 
+        HitEffectManager.Instance?.TriggerKillEffect();
         CinemachineCameraManager.Instance?.ShakeCamera(1.5f);
         LivesSystem.Instance?.PlayerDied(_playerIndex, this);
     }

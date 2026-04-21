@@ -139,6 +139,7 @@ MonoBehaviour:
   maxBounces: 3
   spinSpeed: 720
   playerTag: Player
+  trail: {fileID: 1667808806867728468}
 --- !u!65 &7887077856242188842
 BoxCollider:
   m_ObjectHideFlags: 0
