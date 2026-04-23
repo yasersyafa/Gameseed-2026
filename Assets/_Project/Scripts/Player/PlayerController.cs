@@ -36,7 +36,30 @@ public class PlayerController : MonoBehaviour
     private bool _isDashing;
     private bool _canDash = true;
     private int  _playerIndex;
+    private bool _isFrozen = false;
+    private bool _isEliminated = false;
 
+    #region Player Input Methods
+    public void OnMove(InputValue value)
+    {
+        if (_isEliminated) return;
+         _moveInput = value.Get<Vector2>();
+    }
+
+    public void OnDash(InputValue value)
+    {
+        if (value.isPressed && _canDash && !_isDashing && !_isFrozen && !_isEliminated)
+            StartCoroutine(DashRoutine());
+    }
+
+    public void OnThrow(InputValue value)
+    {
+        if (value.isPressed && _hasBoomerang && !_isDashing && !_isFrozen && !_isEliminated)
+            ThrowBoomerang();
+    }
+#endregion
+
+#region Unity Lifecycle
     private void Awake()
     {
         _rb = GetComponent<Rigidbody>();
@@ -46,39 +69,13 @@ public class PlayerController : MonoBehaviour
         _lastMoveDirection = transform.forward;
     }
 
-#region Player Input Methods
-    public void OnMove(InputValue value) => _moveInput = value.Get<Vector2>();
-
-    public void OnDash(InputValue value)
-    {
-        if (value.isPressed && _canDash && !_isDashing)
-            StartCoroutine(DashRoutine());
-    }
-
-    public void OnThrow(InputValue value)
-    {
-        if (value.isPressed && _hasBoomerang && !_isDashing)
-            ThrowBoomerang();
-    }
-#endregion
-
     private void FixedUpdate()
     {
-        if (_isDashing) return;
+        if (_isDashing || _isFrozen) return;
         MovePlayer();
         RotatePlayer();
     }
-
-    /// <summary>
-    /// run whenever player spawned
-    /// </summary>
-    /// <param name="index"></param>
-    public void Init(int index)
-    {
-        _playerIndex       = index;
-        gameObject.name    = $"Player {index + 1}";
-        _lastMoveDirection = transform.forward;
-    }
+#endregion
 
     private void MovePlayer()
     {
@@ -144,9 +141,22 @@ public class PlayerController : MonoBehaviour
         boomScript.SetTrailColor(GetComponentInChildren<Renderer>()?.material.color ?? Color.white);
     }
 
+
+#region Public API Methods
     public void CatchBoomerang()
     {
         _hasBoomerang = true;
+    }
+
+    /// <summary>
+    /// run whenever player spawned
+    /// </summary>
+    /// <param name="index"></param>
+    public void Init(int index)
+    {
+        _playerIndex       = index;
+        gameObject.name    = $"Player {index + 1}";
+        _lastMoveDirection = transform.forward;
     }
 
     public void OnHitByBoomerang()
@@ -169,7 +179,30 @@ public class PlayerController : MonoBehaviour
         _isDashing         = false;
         _canDash           = true;
         _lastMoveDirection = transform.forward;
+        _isFrozen          = false;
+        _isEliminated      = false;
         _rb.linearVelocity = Vector3.zero;
         StartCoroutine(FlashRoutine());
     }
+
+    public void SetFreeze(bool freeze)
+    {
+        _isFrozen = freeze;
+        if (freeze) _rb.linearVelocity = Vector3.zero;
+    }
+
+    public void SetEliminated(bool eliminated)
+    {
+        _isEliminated = eliminated;
+
+        // Kalau eliminated, tidak bisa input apapun
+        if (eliminated)
+        {
+            _isDashing         = false;
+            _canDash           = false;
+            _hasBoomerang      = false;
+            _rb.linearVelocity = Vector3.zero;
+        }
+    }
+#endregion
 }

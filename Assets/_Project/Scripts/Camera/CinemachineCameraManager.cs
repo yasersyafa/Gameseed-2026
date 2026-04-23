@@ -31,4 +31,14 @@ public class CinemachineCameraManager : MonoBehaviour
     {
         impulseSource.GenerateImpulse(force);
     }
+
+    public void AddTargetIfNotExists(Transform target)
+    {
+        // Cek dulu apakah sudah ada di group
+        for (int i = 0; i < targetGroup.Targets.Count; i++)
+        {
+            if (targetGroup.Targets[i].Object == target) return;
+        }
+        targetGroup.AddMember(target, targetWeight, targetRadius);
+    }
 }

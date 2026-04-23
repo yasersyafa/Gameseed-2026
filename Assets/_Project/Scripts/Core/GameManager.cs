@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -15,6 +16,8 @@ public class GameManager : MonoBehaviour
 
     private PlayerInputManager _inputManager;
     private int _playerCount = 0;
+    private readonly List<PlayerController> _players = new();
+    private bool _gameStarted = false;
 
     private void Awake()
     {
@@ -59,7 +62,9 @@ public class GameManager : MonoBehaviour
                 renderer.material = playerMaterials[index];
         }
 
-        playerInput.GetComponent<PlayerController>().Init(index);
+        var controller = playerInput.GetComponent<PlayerController>();
+        controller.Init(index);
+        _players.Add(controller);
         CinemachineCameraManager.Instance?.AddTarget(playerInput.transform);
 
         // Debug.Log($"Player {index + 1} joined!");
@@ -70,10 +75,24 @@ public class GameManager : MonoBehaviour
 
     private void StartGame()
     {
+        if (_gameStarted) return;
+        _gameStarted = true;
+        
         _inputManager.DisableJoining();
-
-        LivesSystem.Instance?.RegisterPlayers(_playerCount, spawnPoints);
+        RoundManager.Instance?.InitRound(_playerCount);
 
         // Debug.Log("Game Started!");
+    }
+
+    public List<PlayerController> GetAllPlayers()  => _players;
+    public Transform[] GetSpawnPoints() => spawnPoints;
+    public void DisableJoining()
+    {
+        _inputManager.DisableJoining();
+    }
+
+    public void EnableJoining()
+    {
+        _inputManager.EnableJoining();
     }
 }
