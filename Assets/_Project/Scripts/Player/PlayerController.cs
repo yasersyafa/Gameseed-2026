@@ -25,7 +25,9 @@ public class PlayerController : MonoBehaviour
     [Header("Effects")]
     [SerializeField] private GameObject deathParticlePrefab;
 
-    // ── State machine ─────────────────────────────────────────────────────────
+    /// <summary>
+    /// State Machine of PlayerController
+    /// </summary>
     private IPlayerState _currentState;
 
     #region Internal Data
@@ -93,7 +95,7 @@ public class PlayerController : MonoBehaviour
     }
     #endregion
 
-    #region Movement Helpers (dipanggil oleh state)
+    #region Movement Helpers
     public void ApplyMovement()
     {
         MoveDirection = new Vector3(_moveInput.x, 0f, _moveInput.y).normalized;
@@ -161,7 +163,7 @@ public class PlayerController : MonoBehaviour
         StartCoroutine(FlashRoutine());
     }
 
-    /// <summary>Dipanggil RoundManager saat countdown / round end.</summary>
+    /// <summary>Called RoundManager when countdown / round end.</summary>
     public void SetFreeze(bool freeze)
     {
         if (freeze)
@@ -170,7 +172,7 @@ public class PlayerController : MonoBehaviour
             ChangeState(new PlayerIdleState());
     }
 
-    /// <summary>Dipanggil LivesSystem saat player mati / respawn.</summary>
+    /// <summary>Called LivesSystem when player die / respawn.</summary>
     public void SetEliminated(bool eliminated)
     {
         if (eliminated)

@@ -1,7 +1,6 @@
+using System;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 public class RoundManager : MonoBehaviour
 {
@@ -20,11 +19,11 @@ public class RoundManager : MonoBehaviour
     private bool _isTransitioning = false;
 
     // Event — UI akan subscribe ke ini nanti di Phase UI
-    public event System.Action<int[]> OnScoresUpdated;   // scores array
-    public event System.Action<int> OnCountdown;       // angka countdown
-    public event System.Action<int> OnRoundStarted;    // round number
-    public event System.Action<int> OnRoundEnded;      // winner index
-    public event System.Action<int> OnGameOver;        // overall winner index
+    public event Action<int[]> OnScoresUpdated;   // scores array
+    public event Action<int> OnCountdown;       // angka countdown
+    public event Action<int> OnRoundStarted;    // round number
+    public event Action<int> OnRoundEnded;      // winner index
+    public event Action<int> OnGameOver;        // overall winner index
 
     private void Awake()
     {
@@ -121,33 +120,6 @@ public class RoundManager : MonoBehaviour
         // Mulai round baru
         StartCoroutine(StartRoundRoutine());
     }
-
-    // ── Helpers ──────────────────────────────────────────────────────────────
-
-    // private void ResetAllPlayers()
-    // {
-    //     GameManager.Instance.DisableJoining();
-
-    //     var players = GameManager.Instance.GetAllPlayers();
-    //     var spawnPoints = GameManager.Instance.GetSpawnPoints();
-
-    //     for (int i = 0; i < players.Count; i++)
-    //     {
-    //         var player = players[i];
-    //         // Aktifkan kembali player yang eliminated di round sebelumnya
-    //         player.gameObject.SetActive(true);
-
-    //         if (player.TryGetComponent<PlayerInput>(out var playerInput)) playerInput.ActivateInput();
-    //         // Kembalikan ke Cinemachine kalau sebelumnya di-remove
-    //         CinemachineCameraManager.Instance?.AddTargetIfNotExists(player.transform);
-
-    //         // Pindah ke spawn point
-    //         if (i < spawnPoints.Length)
-    //             player.transform.position = spawnPoints[i].position;
-
-    //         player.ResetState();
-    //     }
-    // }
 
     private void ResetAllPlayers()
     {
