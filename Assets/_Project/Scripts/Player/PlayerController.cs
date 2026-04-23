@@ -16,8 +16,7 @@ public class PlayerController : MonoBehaviour
 
     [Header("Boomerang Settings")]
     [SerializeField] private GameObject boomerangPrefab;
-    [SerializeField] private Transform  throwPoint;
-    [SerializeField] private float throwForce = 20f;
+    [SerializeField] private float throwForce  = 20f;
     [SerializeField] private float spawnOffset = 1.2f;
 
     [Header("Renderer")]
@@ -26,137 +25,119 @@ public class PlayerController : MonoBehaviour
     [Header("Effects")]
     [SerializeField] private GameObject deathParticlePrefab;
 
-    private bool _hasBoomerang = true;
-    private Rigidbody _rb;
+    // ── State machine ─────────────────────────────────────────────────────────
+    private IPlayerState _currentState;
+
+    #region Internal Data
+    private int     _playerIndex;
     private Vector2 _moveInput;
-    private Vector3 _moveDirection;
-
     private Vector3 _lastMoveDirection;
+    #endregion
 
-    private bool _isDashing;
-    private bool _canDash = true;
-    private int  _playerIndex;
-    private bool _isFrozen = false;
-    private bool _isEliminated = false;
+    #region Properties
+    public Rigidbody Rb              { get; private set; }
+    public bool      HasBoomerang    { get; set; } = true;
+    public bool      CanDash         { get; set; } = true;
+    public Vector2   MoveInput       { get => _moveInput; set => _moveInput = value; }
+    public Vector3   MoveDirection   { get; private set; }
+    public Vector3   LastMoveDirection => _lastMoveDirection;
+    #endregion
 
-    #region Player Input Methods
-    public void OnMove(InputValue value)
-    {
-        if (_isEliminated) return;
-         _moveInput = value.Get<Vector2>();
-    }
+    // Expose settings to state (read-only)
+    public float DashForce    => dashForce;
+    public float DashDuration => dashDuration;
+    public float DashCooldown => dashCooldown;
 
-    public void OnDash(InputValue value)
-    {
-        if (value.isPressed && _canDash && !_isDashing && !_isFrozen && !_isEliminated)
-            StartCoroutine(DashRoutine());
-    }
-
-    public void OnThrow(InputValue value)
-    {
-        if (value.isPressed && _hasBoomerang && !_isDashing && !_isFrozen && !_isEliminated)
-            ThrowBoomerang();
-    }
-#endregion
-
-#region Unity Lifecycle
+    #region Unity Lifecycle
     private void Awake()
     {
-        _rb = GetComponent<Rigidbody>();
-        _rb.freezeRotation = true;
-        _rb.useGravity = false;
-
+        Rb = GetComponent<Rigidbody>();
+        Rb.freezeRotation = true;
+        Rb.useGravity     = false;
         _lastMoveDirection = transform.forward;
+
+        ChangeState(new PlayerIdleState());
     }
 
     private void FixedUpdate()
     {
-        if (_isDashing || _isFrozen) return;
-        MovePlayer();
-        RotatePlayer();
+        _currentState?.FixedUpdate(this);
     }
-#endregion
+    #endregion
 
-    private void MovePlayer()
+    #region Player Input Methods
+    public void OnMove(InputValue value)
     {
-        _moveDirection = new Vector3(_moveInput.x, 0f, _moveInput.y).normalized;
-
-        if (_moveDirection != Vector3.zero)
-            _lastMoveDirection = _moveDirection;
-
-        _rb.linearVelocity = _moveDirection * moveSpeed;
+        _currentState?.HandleMove(this, value.Get<Vector2>());
     }
 
-    private void RotatePlayer()
+    public void OnDash(InputValue value)
     {
-        if (_moveDirection == Vector3.zero) return;
-        Quaternion targetRotation = Quaternion.LookRotation(_moveDirection);
-        _rb.rotation = Quaternion.RotateTowards(
-            _rb.rotation,
-            targetRotation,
-            rotationSpeed * Time.fixedDeltaTime
+        if (value.isPressed)
+            _currentState?.HandleDash(this);
+    }
+
+    public void OnThrow(InputValue value)
+    {
+        if (value.isPressed)
+            _currentState?.HandleThrow(this);
+    }
+    #endregion
+
+    #region State Machine
+    public void ChangeState(IPlayerState newState)
+    {
+        _currentState?.Exit(this);
+        _currentState = newState;
+        _currentState.Enter(this);
+    }
+    #endregion
+
+    #region Movement Helpers (dipanggil oleh state)
+    public void ApplyMovement()
+    {
+        MoveDirection = new Vector3(_moveInput.x, 0f, _moveInput.y).normalized;
+
+        if (MoveDirection != Vector3.zero)
+            _lastMoveDirection = MoveDirection;
+
+        Rb.linearVelocity = MoveDirection * moveSpeed;
+    }
+
+    public void ApplyRotation()
+    {
+        if (MoveDirection == Vector3.zero) return;
+
+        Quaternion target = Quaternion.LookRotation(MoveDirection);
+        Rb.rotation = Quaternion.RotateTowards(
+            Rb.rotation, target, rotationSpeed * Time.fixedDeltaTime
         );
     }
 
-    private IEnumerator DashRoutine()
+    public void ThrowBoomerang()
     {
-        _canDash  = false;
-        _isDashing = true;
+        HasBoomerang = false;
 
-        Vector3 dashDir = _moveDirection != Vector3.zero ? _moveDirection : _lastMoveDirection;
-        _rb.linearVelocity = dashDir * dashForce;
-
-        yield return YieldCollection.WaitForSeconds(dashDuration);
-        _isDashing = false;
-        _rb.linearVelocity = Vector3.zero;
-
-        yield return YieldCollection.WaitForSeconds(dashCooldown);
-        _canDash = true;
-    }
-
-    private IEnumerator FlashRoutine()
-    {
-        if (visual == null) yield break;
-
-        // Berkedip 5x selama 1.5 detik
-        for (int i = 0; i < 10; i++)
-        {
-            visual.enabled = !visual.enabled;
-            yield return YieldCollection.WaitForSeconds(0.05f);
-        }
-        visual.enabled = true;
-    }
-
-    private void ThrowBoomerang()
-    {
-        _hasBoomerang = false;
-
-        // Selalu spawn di depan arah gerak, bukan di throwPoint yang posisinya fixed
-        Vector3 spawnPos = transform.position + _lastMoveDirection.normalized * spawnOffset;
-        
-        GameObject boomObj    = Instantiate(boomerangPrefab, spawnPos, Quaternion.identity);
-        Boomerang  boomScript = boomObj.GetComponent<Boomerang>();
+        Vector3 spawnPos  = transform.position + _lastMoveDirection.normalized * spawnOffset;
+        GameObject boomObj = Instantiate(boomerangPrefab, spawnPos, Quaternion.identity);
+        Boomerang boomScript = boomObj.GetComponent<Boomerang>();
 
         boomScript.Launch(this.transform, _lastMoveDirection, throwForce);
         boomScript.SetTrailColor(GetComponentInChildren<Renderer>()?.material.color ?? Color.white);
     }
+    #endregion
 
-
-#region Public API Methods
-    public void CatchBoomerang()
-    {
-        _hasBoomerang = true;
-    }
-
-    /// <summary>
-    /// run whenever player spawned
-    /// </summary>
-    /// <param name="index"></param>
+    #region Public API
     public void Init(int index)
     {
         _playerIndex       = index;
         gameObject.name    = $"Player {index + 1}";
         _lastMoveDirection = transform.forward;
+    }
+
+    public void CatchBoomerang()
+    {
+        HasBoomerang = true;
     }
 
     public void OnHitByBoomerang()
@@ -175,34 +156,43 @@ public class PlayerController : MonoBehaviour
 
     public void ResetState()
     {
-        _hasBoomerang      = true;
-        _isDashing         = false;
-        _canDash           = true;
         _lastMoveDirection = transform.forward;
-        _isFrozen          = false;
-        _isEliminated      = false;
-        _rb.linearVelocity = Vector3.zero;
+        ChangeState(new PlayerIdleState());
         StartCoroutine(FlashRoutine());
     }
 
+    /// <summary>Dipanggil RoundManager saat countdown / round end.</summary>
     public void SetFreeze(bool freeze)
     {
-        _isFrozen = freeze;
-        if (freeze) _rb.linearVelocity = Vector3.zero;
+        if (freeze)
+            ChangeState(new PlayerFrozenState());
+        else
+            ChangeState(new PlayerIdleState());
     }
 
+    /// <summary>Dipanggil LivesSystem saat player mati / respawn.</summary>
     public void SetEliminated(bool eliminated)
     {
-        _isEliminated = eliminated;
-
-        // Kalau eliminated, tidak bisa input apapun
         if (eliminated)
-        {
-            _isDashing         = false;
-            _canDash           = false;
-            _hasBoomerang      = false;
-            _rb.linearVelocity = Vector3.zero;
-        }
+            ChangeState(new PlayerEliminatedState());
+        else
+            ChangeState(new PlayerIdleState());
     }
-#endregion
+
+    public bool IsEliminated => _currentState is PlayerEliminatedState;
+    #endregion
+
+    #region Private Helpers
+    private IEnumerator FlashRoutine()
+    {
+        if (visual == null) yield break;
+
+        for (int i = 0; i < 10; i++)
+        {
+            visual.enabled = !visual.enabled;
+            yield return YieldCollection.WaitForSeconds(0.05f);
+        }
+        visual.enabled = true;
+    }
+    #endregion
 }
