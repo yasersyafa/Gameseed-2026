@@ -36,5 +36,6 @@ public class PlayerDashingState : IPlayerState
         yield return YieldCollection.WaitForSeconds(player.DashCooldown);
         player.CanDash = true;
     }
+    public void HandleAttack(PlayerController player) { }
 }
 #endregion

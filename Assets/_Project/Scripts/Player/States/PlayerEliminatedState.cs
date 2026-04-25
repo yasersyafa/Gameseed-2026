@@ -23,5 +23,7 @@ public class PlayerEliminatedState : IPlayerState
     public void HandleThrow(PlayerController player) { }
 
     public void FixedUpdate(PlayerController player) { }
+
+    public void HandleAttack(PlayerController player) { }
 }
 #endregion

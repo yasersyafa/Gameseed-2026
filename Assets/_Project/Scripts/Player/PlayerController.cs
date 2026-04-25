@@ -18,6 +18,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private GameObject boomerangPrefab;
     [SerializeField] private float throwForce  = 20f;
     [SerializeField] private float spawnOffset = 1.2f;
+    [SerializeField] private MeleeController melee;
 
     [Header("Renderer")]
     public Renderer visual;
@@ -43,6 +44,7 @@ public class PlayerController : MonoBehaviour
     public Vector2   MoveInput       { get => _moveInput; set => _moveInput = value; }
     public Vector3   MoveDirection   { get; private set; }
     public Vector3   LastMoveDirection => _lastMoveDirection;
+    public MeleeController Melee => melee;
     #endregion
 
     // Expose settings to state (read-only)
@@ -83,6 +85,14 @@ public class PlayerController : MonoBehaviour
     {
         if (value.isPressed)
             _currentState?.HandleThrow(this);
+    }
+
+    public void OnAttack(InputValue value)
+    {
+        if (value.isPressed)
+        {
+            _currentState?.HandleAttack(this);
+        }
     }
     #endregion
 

@@ -31,5 +31,11 @@ public class PlayerIdleState : IPlayerState
         player.ApplyMovement();
         player.ApplyRotation();
     }
+
+    public void HandleAttack(PlayerController player)
+    {
+        if (!player.HasBoomerang) return;
+        player.ChangeState(new PlayerAttackingState());
+    }
 }
 #endregion
