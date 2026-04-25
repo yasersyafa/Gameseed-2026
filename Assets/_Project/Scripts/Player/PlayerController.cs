@@ -152,7 +152,9 @@ public class PlayerController : MonoBehaviour
             Destroy(particle, 2f);
         }
 
-        HitEffectManager.Instance?.TriggerKillEffect();
+        GameEvents.RaisePlayerHit(_playerIndex, this);
+
+        // HitEffectManager.Instance?.TriggerKillEffect();
         LivesSystem.Instance?.PlayerDied(_playerIndex, this);
     }
 

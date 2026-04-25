@@ -1,4 +1,5 @@
 // Buat script baru: HitEffectManager.cs
+using System;
 using System.Collections;
 using UnityEngine;
 
@@ -16,6 +17,16 @@ public class HitEffectManager : MonoBehaviour
     private void Awake()
     {
         Instance = this;
+    }
+
+    private void OnEnable()
+    {
+        GameEvents.OnPlayerHit += HandlerPlayerHit;
+    }
+
+    private void HandlerPlayerHit(int index, PlayerController controller)
+    {
+        TriggerKillEffect();
     }
 
     public void TriggerKillEffect()

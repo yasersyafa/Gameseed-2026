@@ -16,29 +16,45 @@ public class CinemachineCameraManager : MonoBehaviour
         Instance = this;
     }
 
-    public void AddTarget(Transform target)
+    private void OnEnable()
     {
-        targetGroup.AddMember(target, targetWeight, targetRadius);
+        GameEvents.OnPlayerEliminated += HandlePlayerEliminated;
+        GameEvents.OnPlayerRespawned  += HandlePlayerRespawned;
+        GameEvents.OnPlayerHit        += HandlePlayerHit;
     }
+
+    private void OnDisable()
+    {
+        GameEvents.OnPlayerEliminated -= HandlePlayerEliminated;
+        GameEvents.OnPlayerRespawned  -= HandlePlayerRespawned;
+        GameEvents.OnPlayerHit        -= HandlePlayerHit;
+    }
+
+    private void HandlePlayerEliminated(int index, PlayerController controller)
+        => RemoveTarget(controller.transform);
+
+    private void HandlePlayerRespawned(int index, PlayerController controller)
+        => AddTargetIfNotExists(controller.transform);
+
+    private void HandlePlayerHit(int index, PlayerController controller)
+        => ShakeCamera(1.5f);
+
+    // ── Public API ────────────────────────────────────────────────────────────
+
+    public void AddTarget(Transform target)
+        => targetGroup.AddMember(target, targetWeight, targetRadius);
 
     public void RemoveTarget(Transform target)
-    {
-        targetGroup.RemoveMember(target);
-    }
+        => targetGroup.RemoveMember(target);
 
-    // force kecil = 0.5f (boomerang catch), besar = 1.5f (player mati)
     public void ShakeCamera(float force = 1f)
-    {
-        impulseSource.GenerateImpulse(force);
-    }
+        => impulseSource.GenerateImpulse(force);
 
     public void AddTargetIfNotExists(Transform target)
     {
-        // Cek dulu apakah sudah ada di group
         for (int i = 0; i < targetGroup.Targets.Count; i++)
-        {
             if (targetGroup.Targets[i].Object == target) return;
-        }
+
         targetGroup.AddMember(target, targetWeight, targetRadius);
     }
 }

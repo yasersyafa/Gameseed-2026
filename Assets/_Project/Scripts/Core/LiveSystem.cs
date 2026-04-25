@@ -1,7 +1,5 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 public class LivesSystem : MonoBehaviour
 {
@@ -12,9 +10,9 @@ public class LivesSystem : MonoBehaviour
     [SerializeField] private float respawnDelay   = 2f;
 
     private Transform[] _spawnPoints;
-    private int[] _lives;
-    private int _alivePlayers;
-    private bool _roundOver = false;
+    private int[]       _lives;
+    private int         _alivePlayers;
+    private bool        _roundOver = false;
 
     private void Awake()
     {
@@ -34,18 +32,17 @@ public class LivesSystem : MonoBehaviour
 
     public void PlayerDied(int playerIndex, PlayerController controller)
     {
-        if (_roundOver) return;
-        if (_lives == null) return;
+        if (_roundOver || _lives == null) return;
+
+        GameEvents.RaisePlayerHit(playerIndex, controller);
 
         _lives[playerIndex]--;
 
         if (_lives[playerIndex] <= 0)
         {
             _alivePlayers--;
-
-            // JANGAN SetActive(false) — pakai HidePlayer instead
             HidePlayer(controller);
-            CinemachineCameraManager.Instance?.RemoveTarget(controller.transform);
+            GameEvents.RaisePlayerEliminated(playerIndex, controller);
             CheckRoundWinCondition();
         }
         else
@@ -56,31 +53,24 @@ public class LivesSystem : MonoBehaviour
 
     private void HidePlayer(PlayerController controller)
     {
-        // Disable visual
         if (controller.visual != null)
             controller.visual.enabled = false;
 
-        // Disable collider
         if (controller.TryGetComponent<Collider>(out var col))
             col.enabled = false;
 
-        // Freeze rigidbody
         if (controller.TryGetComponent<Rigidbody>(out var rb))
         {
             rb.linearVelocity = Vector3.zero;
             rb.isKinematic    = true;
         }
 
-        // Tandai sebagai eliminated
         controller.SetEliminated(true);
-
-        // Pindah ke posisi tersembunyi jauh dari arena
         controller.transform.position = new Vector3(0f, -100f, 0f);
     }
 
     private void ShowPlayer(PlayerController controller, Vector3 position)
     {
-        // Pindah ke spawn point dulu sebelum di-show
         controller.transform.position = position;
 
         if (controller.visual != null)
@@ -96,31 +86,6 @@ public class LivesSystem : MonoBehaviour
         controller.ResetState();
     }
 
-    // private IEnumerator RespawnRoutine(int index, PlayerController controller)
-    // {
-    //     var rb   = controller.GetComponent<Rigidbody>();
-    //     var col  = controller.GetComponent<Collider>();
-    //     var rend = controller.visual;
-
-    //     if (rb)   rb.isKinematic = true;
-    //     if (col)  col.enabled    = false;
-    //     if (rend) rend.enabled   = false;
-    //     controller.enabled       = false;
-
-    //     yield return YieldCollection.WaitForSeconds(respawnDelay);
-
-    //     if (_roundOver || _lives[index] <= 0) yield break;
-
-    //     if (_spawnPoints != null && index < _spawnPoints.Length)
-    //         controller.transform.position = _spawnPoints[index].position;
-
-    //     if (rb)   rb.isKinematic = false;
-    //     if (col)  col.enabled    = true;
-    //     if (rend) rend.enabled   = true;
-    //     controller.enabled       = true;
-    //     controller.ResetState();
-    // }
-
     private IEnumerator RespawnRoutine(int index, PlayerController controller)
     {
         HidePlayer(controller);
@@ -134,6 +99,7 @@ public class LivesSystem : MonoBehaviour
             : Vector3.zero;
 
         ShowPlayer(controller, spawnPos);
+        GameEvents.RaisePlayerRespawned(index, controller);
     }
 
     private void CheckRoundWinCondition()
@@ -142,28 +108,24 @@ public class LivesSystem : MonoBehaviour
 
         _roundOver = true;
 
-        var allPlayers = GameManager.Instance.GetAllPlayers();
-        for (int i = 0; i < allPlayers.Count; i++)
+        for (int i = 0; i < _lives.Length; i++)
         {
             if (_lives[i] > 0)
             {
-                RoundManager.Instance?.OnRoundEnd(i); // CHANGED
+                RoundManager.Instance?.OnRoundEnd(i);
                 return;
             }
         }
 
-        // Edge case: draw
         RoundManager.Instance?.OnRoundEnd(-1);
     }
 
-    public int GetLives(int playerIndex)
+    public int  GetLives(int playerIndex)
     {
         if (_lives == null || playerIndex >= _lives.Length) return 0;
         return _lives[playerIndex];
     }
 
     public void ShowPlayerFromRound(PlayerController controller, Vector3 position)
-    {
-        ShowPlayer(controller, position);
-    }
+        => ShowPlayer(controller, position);
 }
