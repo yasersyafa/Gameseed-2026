@@ -41,5 +41,14 @@ public class MeleeController : MonoBehaviour
         gameObject.SetActive(false);
     }
 
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.TryGetComponent<PlayerController>(out var player))
+        {
+            player.OnHitByBoomerang();
+            gameObject.SetActive(false);
+        }
+    }
+
     public float SwingDuration => swingDuration;
 }
