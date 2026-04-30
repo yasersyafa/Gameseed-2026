@@ -1,16 +1,23 @@
 using System.Collections;
 using UnityEngine;
+using VContainer;
 
 public class LivesSystem : MonoBehaviour
 {
-    public static LivesSystem Instance { get; private set; }
-
     [Header("Config (override SerializeField if assigned)")]
     [SerializeField] private RoundConfigSO configSO;
 
     [Header("Settings")]
     [SerializeField] private int   livesPerPlayer = 1;
     [SerializeField] private float respawnDelay   = 2f;
+
+    private RoundManager _round;
+
+    [Inject]
+    public void Construct(RoundManager round)
+    {
+        _round = round;
+    }
 
     private Transform[] _spawnPoints;
     private int[]       _lives;
@@ -19,7 +26,6 @@ public class LivesSystem : MonoBehaviour
 
     private void Awake()
     {
-        Instance = this;
         ApplyConfigFromSO();
     }
 
@@ -123,12 +129,12 @@ public class LivesSystem : MonoBehaviour
         {
             if (_lives[i] > 0)
             {
-                RoundManager.Instance?.OnRoundEnd(i);
+                _round?.OnRoundEnd(i);
                 return;
             }
         }
 
-        RoundManager.Instance?.OnRoundEnd(-1);
+        _round?.OnRoundEnd(-1);
     }
 
     public int  GetLives(int playerIndex)

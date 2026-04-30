@@ -1,10 +1,9 @@
 using System.Collections;
 using UnityEngine;
+using VContainer;
 
 public class RoundManager : MonoBehaviour
 {
-    public static RoundManager Instance { get; private set; }
-
     [Header("Config (override SerializeField if assigned)")]
     [SerializeField] private RoundConfigSO configSO;
 
@@ -12,6 +11,18 @@ public class RoundManager : MonoBehaviour
     [SerializeField] private int   pointsToWin       = 5;
     [SerializeField] private float countdownDuration = 3f;
     [SerializeField] private float roundEndDelay     = 2f;
+
+    private GameManager              _gameManager;
+    private LivesSystem              _lives;
+    private CinemachineCameraManager _cam;
+
+    [Inject]
+    public void Construct(GameManager gm, LivesSystem lives, CinemachineCameraManager cam)
+    {
+        _gameManager = gm;
+        _lives       = lives;
+        _cam         = cam;
+    }
 
     private int[] _scores;
     private int   _playerCount;
@@ -21,7 +32,6 @@ public class RoundManager : MonoBehaviour
 
     private void Awake()
     {
-        Instance = this;
         ApplyConfigFromSO();
     }
 
@@ -65,8 +75,8 @@ public class RoundManager : MonoBehaviour
 
         GameEvents.RaiseCountdownTick(0);
 
-        LivesSystem.Instance?.RegisterPlayers(_playerCount,
-            GameManager.Instance.GetSpawnPoints());
+        _lives?.RegisterPlayers(_playerCount,
+            _gameManager.GetSpawnPoints());
 
         SetAllPlayersFreeze(false);
         _roundActive     = true;
@@ -108,10 +118,10 @@ public class RoundManager : MonoBehaviour
 
     private void ResetAllPlayers()
     {
-        GameManager.Instance.DisableJoining();
+        _gameManager.DisableJoining();
 
-        var players     = GameManager.Instance.GetAllPlayers();
-        var spawnPoints = GameManager.Instance.GetSpawnPoints();
+        var players     = _gameManager.GetAllPlayers();
+        var spawnPoints = _gameManager.GetSpawnPoints();
 
         for (int i = 0; i < players.Count; i++)
         {
@@ -119,14 +129,14 @@ public class RoundManager : MonoBehaviour
                 ? spawnPoints[i].position
                 : Vector3.zero;
 
-            LivesSystem.Instance?.ShowPlayerFromRound(players[i], spawnPos);
-            CinemachineCameraManager.Instance?.AddTargetIfNotExists(players[i].transform);
+            _lives?.ShowPlayerFromRound(players[i], spawnPos);
+            _cam?.AddTargetIfNotExists(players[i].transform);
         }
     }
 
     private void SetAllPlayersFreeze(bool freeze)
     {
-        foreach (var player in GameManager.Instance.GetAllPlayers())
+        foreach (var player in _gameManager.GetAllPlayers())
             player.SetFreeze(freeze);
     }
 

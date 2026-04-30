@@ -1,11 +1,23 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using VContainer;
+using VContainer.Unity;
 
 [RequireComponent(typeof(PlayerInputManager))]
 public class GameManager : MonoBehaviour
 {
-    public static GameManager Instance { get; private set; }
+    private RoundManager              _round;
+    private CinemachineCameraManager  _cam;
+    private IObjectResolver           _resolver;
+
+    [Inject]
+    public void Construct(RoundManager round, CinemachineCameraManager cam, IObjectResolver resolver)
+    {
+        _round    = round;
+        _cam      = cam;
+        _resolver = resolver;
+    }
 
     [Header("Player Settings")]
     [SerializeField] private Transform[] spawnPoints;
@@ -30,7 +42,6 @@ public class GameManager : MonoBehaviour
 
     private void Awake()
     {
-        Instance      = this;
         _inputManager = GetComponent<PlayerInputManager>();
 
         // PlayerInputManager.maxPlayerCount is read-only API.
@@ -97,7 +108,11 @@ public class GameManager : MonoBehaviour
         var controller = playerInput.GetComponent<PlayerController>();
         controller.Init(index);
         _players.Add(controller);
-        CinemachineCameraManager.Instance?.AddTarget(playerInput.transform);
+
+        // Inject services ke runtime-spawned player
+        _resolver?.InjectGameObject(playerInput.gameObject);
+
+        _cam?.AddTarget(playerInput.transform);
 
 #if UNITY_EDITOR
         Debug.Log($"[GameManager] Player {index} joined ({_playerCount}/{maxPlayers})");
@@ -122,7 +137,7 @@ public class GameManager : MonoBehaviour
 
         _gameStarted = true;
         _inputManager.DisableJoining();
-        RoundManager.Instance?.InitRound(_playerCount);
+        _round?.InitRound(_playerCount);
 
 #if UNITY_EDITOR
         Debug.Log($"[GameManager] StartGame with {_playerCount} players");

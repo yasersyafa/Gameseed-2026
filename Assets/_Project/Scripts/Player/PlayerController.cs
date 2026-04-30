@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using VContainer;
 
 [RequireComponent(typeof(Rigidbody))]
 public class PlayerController : MonoBehaviour
@@ -79,6 +80,17 @@ public class PlayerController : MonoBehaviour
     private PlayerInput                          _playerInput;
     private UnityEngine.InputSystem.InputAction  _throwAction;
     private bool                                 _wasThrowPressedLastFrame;
+
+    // Injected services (via VContainer InjectGameObject di GameManager.OnPlayerJoined)
+    private LivesSystem      _lives;
+    private HitEffectManager _hits;
+
+    [Inject]
+    public void Construct(LivesSystem lives, HitEffectManager hits)
+    {
+        _lives = lives;
+        _hits  = hits;
+    }
 
     #region Unity Lifecycle
     private void Awake()
@@ -289,8 +301,8 @@ public class PlayerController : MonoBehaviour
 
         GameEvents.RaisePlayerHit(_playerIndex, this);
 
-        // HitEffectManager.Instance?.TriggerKillEffect();
-        LivesSystem.Instance?.PlayerDied(_playerIndex, this);
+        // _hits?.TriggerKillEffect();   // sudah otomatis via OnPlayerHit subscriber
+        _lives?.PlayerDied(_playerIndex, this);
     }
 
     public void ApplyKnockback(Vector3 direction, float force)

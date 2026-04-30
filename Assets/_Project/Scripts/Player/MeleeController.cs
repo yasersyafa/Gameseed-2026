@@ -1,6 +1,7 @@
 using System;
 using DG.Tweening;
 using UnityEngine;
+using VContainer;
 
 public class MeleeController : MonoBehaviour
 {
@@ -12,7 +13,14 @@ public class MeleeController : MonoBehaviour
     [Header("Parry")]
     [SerializeField] private float parrySpeedMultiplier = 1.4f;
 
-    private Tween _swingTween;
+    private Tween             _swingTween;
+    private HitEffectManager  _hits;
+
+    [Inject]
+    public void Construct(HitEffectManager hits)
+    {
+        _hits = hits;
+    }
 
     /// <summary>
     /// Aktifkan sword, swing horizontal, lalu nonaktifkan.
@@ -65,7 +73,7 @@ public class MeleeController : MonoBehaviour
             // Parrier sekarang punya boomerang baru ini sebagai active
             parrier.ActiveBoomerang = boomerang;
 
-            HitEffectManager.Instance?.TriggerKillEffect();
+            _hits?.TriggerKillEffect();
             GameEvents.RaiseBoomerangParried(parrier.PlayerIndex);
 
 #if UNITY_EDITOR

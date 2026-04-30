@@ -3,18 +3,11 @@ using UnityEngine;
 
 public class CinemachineCameraManager : MonoBehaviour
 {
-    public static CinemachineCameraManager Instance { get; private set; }
-
     [SerializeField] private CinemachineTargetGroup  targetGroup;
     [SerializeField] private CinemachineImpulseSource impulseSource;
 
     [SerializeField] private float targetWeight = 1f;
     [SerializeField] private float targetRadius = 2f;
-
-    private void Awake()
-    {
-        Instance = this;
-    }
 
     private void OnEnable()
     {

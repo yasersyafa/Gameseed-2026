@@ -5,8 +5,6 @@ using UnityEngine;
 
 public class HitEffectManager : MonoBehaviour
 {
-    public static HitEffectManager Instance { get; private set; }
-
     [Header("Slow Motion Settings")]
     [SerializeField] private float slowTimeScale    = 0.15f;  // seberapa lambat
     [SerializeField] private float slowDuration     = 0.2f;   // berapa lama lambat
@@ -14,10 +12,6 @@ public class HitEffectManager : MonoBehaviour
 
     private Coroutine _activeRoutine;
 
-    private void Awake()
-    {
-        Instance = this;
-    }
 
     private void OnEnable()
     {
