@@ -5,6 +5,9 @@ public class RoundManager : MonoBehaviour
 {
     public static RoundManager Instance { get; private set; }
 
+    [Header("Config (override SerializeField if assigned)")]
+    [SerializeField] private RoundConfigSO configSO;
+
     [Header("Round Settings")]
     [SerializeField] private int   pointsToWin       = 5;
     [SerializeField] private float countdownDuration = 3f;
@@ -19,7 +22,18 @@ public class RoundManager : MonoBehaviour
     private void Awake()
     {
         Instance = this;
+        ApplyConfigFromSO();
     }
+
+    private void ApplyConfigFromSO()
+    {
+        if (configSO == null) return;
+        pointsToWin       = configSO.pointsToWin;
+        countdownDuration = configSO.countdownDuration;
+        roundEndDelay     = configSO.roundEndDelay;
+    }
+
+    public RoundConfigSO Config => configSO;
 
     public void InitRound(int playerCount)
     {

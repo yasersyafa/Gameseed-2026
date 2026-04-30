@@ -22,9 +22,17 @@ public class PlayerIdleState : IPlayerState
 
     public void HandleThrow(PlayerController player)
     {
-        if (!player.HasBoomerang) return;
-        player.ThrowBoomerang();
+        if (!player.HasBoomerang)
+        {
+            // Manual recall: tap throw waktu boomerang sedang flying.
+            player.RequestRecall();
+            return;
+        }
+        // Mulai charge throw (release = lepas)
+        player.ChangeState(new PlayerChargingState());
     }
+
+    public void HandleThrowReleased(PlayerController player) { }
 
     public void FixedUpdate(PlayerController player)
     {

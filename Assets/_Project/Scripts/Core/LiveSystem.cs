@@ -5,6 +5,9 @@ public class LivesSystem : MonoBehaviour
 {
     public static LivesSystem Instance { get; private set; }
 
+    [Header("Config (override SerializeField if assigned)")]
+    [SerializeField] private RoundConfigSO configSO;
+
     [Header("Settings")]
     [SerializeField] private int   livesPerPlayer = 1;
     [SerializeField] private float respawnDelay   = 2f;
@@ -17,6 +20,14 @@ public class LivesSystem : MonoBehaviour
     private void Awake()
     {
         Instance = this;
+        ApplyConfigFromSO();
+    }
+
+    private void ApplyConfigFromSO()
+    {
+        if (configSO == null) return;
+        livesPerPlayer = configSO.livesPerPlayer;
+        respawnDelay   = configSO.respawnDelay;
     }
 
     public void RegisterPlayers(int count, Transform[] spawnPoints)

@@ -21,6 +21,7 @@ public class PlayerEliminatedState : IPlayerState
     public void HandleMove(PlayerController player, Vector2 input) { }
     public void HandleDash(PlayerController player) { }
     public void HandleThrow(PlayerController player) { }
+    public void HandleThrowReleased(PlayerController player) { }
 
     public void FixedUpdate(PlayerController player) { }
 

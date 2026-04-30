@@ -9,6 +9,9 @@ public class MeleeController : MonoBehaviour
     [SerializeField] private float swingDuration = 0.3f;
     [SerializeField] private Ease  swingEase     = Ease.OutQuart;
 
+    [Header("Parry")]
+    [SerializeField] private float parrySpeedMultiplier = 1.4f;
+
     private Tween _swingTween;
 
     /// <summary>
@@ -43,9 +46,40 @@ public class MeleeController : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
+        // Parry: boomerang masuk swing window → reflect ke arah parrier facing
+        if (collision.gameObject.TryGetComponent<Boomerang>(out var boomerang))
+        {
+            var parrier = transform.root.GetComponent<PlayerController>();
+            if (parrier == null) return;
+
+            // Skip parry boomerang sendiri
+            if (boomerang.Owner == parrier.transform) return;
+
+            Vector3 reflectDir = parrier.transform.forward;
+            if (parrier.LastMoveDirection.sqrMagnitude > 0.01f)
+                reflectDir = parrier.LastMoveDirection.normalized;
+
+            boomerang.Reflect(reflectDir, parrySpeedMultiplier, parrier.transform);
+            boomerang.SetThrowerIndex(parrier.PlayerIndex);
+
+            // Parrier sekarang punya boomerang baru ini sebagai active
+            parrier.ActiveBoomerang = boomerang;
+
+            HitEffectManager.Instance?.TriggerKillEffect();
+            GameEvents.RaiseBoomerangParried(parrier.PlayerIndex);
+
+#if UNITY_EDITOR
+            Debug.Log($"[Melee] PARRY by player {parrier.PlayerIndex}");
+#endif
+            gameObject.SetActive(false);
+            return;
+        }
+
         if (collision.gameObject.TryGetComponent<PlayerController>(out var player))
         {
-            player.OnHitByBoomerang();
+            Vector3 hitDir = (collision.transform.position - transform.position).normalized;
+            int killerIndex = transform.root.GetComponent<PlayerController>()?.PlayerIndex ?? -1;
+            player.OnHitByBoomerang(killerIndex, hitDir);
             gameObject.SetActive(false);
         }
     }

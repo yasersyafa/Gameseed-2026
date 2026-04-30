@@ -133,11 +133,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 10f9d582268fd4d65bbda3e8702e56b7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Boomerang
+  statsSO: {fileID: 11400000, guid: 60b02e6c69cb743d7abf65bb4fa18a46, type: 2}
   maxDistance: 10
   returnSpeed: 20
   catchRadius: 1
   maxBounces: 3
   spinSpeed: 720
+  lateralCurveStrength: 3
   playerTag: Player
   trail: {fileID: 1667808806867728468}
 --- !u!65 &7887077856242188842

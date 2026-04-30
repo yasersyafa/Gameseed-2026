@@ -6,6 +6,7 @@ public interface IPlayerState
     void HandleMove(PlayerController player, UnityEngine.Vector2 input);
     void HandleDash(PlayerController player);
     void HandleThrow(PlayerController player);
+    void HandleThrowReleased(PlayerController player);
     void HandleAttack(PlayerController player);
 
     void FixedUpdate(PlayerController player);

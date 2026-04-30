@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class Boomerang : MonoBehaviour
 {
-    private enum BoomerangState { Flying, Returning }
+    public enum BoomerangState { Flying, Returning }
     private BoomerangState _state = BoomerangState.Flying;
 
     private Transform _owner;
@@ -10,6 +10,9 @@ public class Boomerang : MonoBehaviour
     private Vector3 _velocity;
     private float _speed;
     private bool _hasHit = false;
+
+    [Header("Config (override SerializeField if assigned)")]
+    [SerializeField] private BoomerangStatsSO statsSO;
 
     [Header("Flight")]
     [SerializeField] private float maxDistance = 10f;
@@ -28,12 +31,21 @@ public class Boomerang : MonoBehaviour
     [SerializeField] private TrailRenderer trail;
 
     private Vector3 _spawnPosition;
-    private int     _bounceCount = 0;
+    private int     _bounceCount   = 0;
+    private int     _throwerIndex  = -1;
+    private float   _maxDistanceOverride = -1f;
 
     private Rigidbody _rb;
 
+    public int ThrowerIndex => _throwerIndex;
+    public BoomerangState State => _state;
+    public Transform Owner => _owner;
+    public float CurrentSpeed => _velocity.magnitude;
+
     private void Awake()
     {
+        ApplyStatsFromSO();
+
         _rb = GetComponent<Rigidbody>();
         _rb.useGravity      = false;
         _rb.linearDamping   = 0f;
@@ -45,6 +57,17 @@ public class Boomerang : MonoBehaviour
                         | RigidbodyConstraints.FreezeRotationZ;
     }
 
+    private void ApplyStatsFromSO()
+    {
+        if (statsSO == null) return;
+        maxDistance          = statsSO.maxDistance;
+        returnSpeed          = statsSO.returnSpeed;
+        catchRadius          = statsSO.catchRadius;
+        maxBounces           = statsSO.maxBounces;
+        spinSpeed            = statsSO.spinSpeed;
+        lateralCurveStrength = statsSO.lateralCurveStrength;
+    }
+
     public void Launch(Transform owner, Vector3 direction, float force)
     {
         _owner           = owner;
@@ -54,7 +77,49 @@ public class Boomerang : MonoBehaviour
         _spawnPosition   = transform.position;
         _state           = BoomerangState.Flying;
         _bounceCount     = 0;
-        _hasHit = false;
+        _hasHit          = false;
+#if UNITY_EDITOR
+        Debug.Log($"[Boomerang] Launch owner={owner.name} dir={direction} force={force:F1}");
+#endif
+    }
+
+    public void SetThrowerIndex(int index)
+    {
+        _throwerIndex = index;
+    }
+
+    public void SetMaxDistance(float distance)
+    {
+        _maxDistanceOverride = distance;
+    }
+
+    /// <summary>Manual recall — paksa balik ke owner walau belum max distance.</summary>
+    public void ForceRecall()
+    {
+        if (_state == BoomerangState.Returning) return;
+#if UNITY_EDITOR
+        Debug.Log($"[Boomerang] ForceRecall thrower={_throwerIndex}");
+#endif
+        StartReturning();
+    }
+
+    /// <summary>Reflect velocity (untuk parry).</summary>
+    public void Reflect(Vector3 newDirection, float speedScale = 1f, Transform newOwner = null)
+    {
+        _velocity      = newDirection.normalized * (_speed * speedScale);
+        _spawnPosition = _rb.position;
+        _state         = BoomerangState.Flying;
+        _bounceCount   = 0;
+        _hasHit        = false;
+
+        if (newOwner != null)
+        {
+            _owner           = newOwner;
+            _ownerController = newOwner.GetComponent<PlayerController>();
+        }
+#if UNITY_EDITOR
+        Debug.Log($"[Boomerang] Reflect newOwner={(newOwner != null ? newOwner.name : "same")} scale={speedScale:F2}");
+#endif
     }
 
     private void FixedUpdate()
@@ -72,7 +137,8 @@ public class Boomerang : MonoBehaviour
     {
         _rb.MovePosition(_rb.position + _velocity * Time.fixedDeltaTime);
 
-        if (Vector3.Distance(_rb.position, _spawnPosition) >= maxDistance)
+        float effectiveMax = _maxDistanceOverride > 0f ? _maxDistanceOverride : maxDistance;
+        if (Vector3.Distance(_rb.position, _spawnPosition) >= effectiveMax)
             StartReturning();
     }
 
@@ -154,9 +220,9 @@ public class Boomerang : MonoBehaviour
         if (collision.gameObject.CompareTag(playerTag))
         {
             _hasHit = true;
-            collision.gameObject.GetComponent<PlayerController>()?.OnHitByBoomerang();
+            collision.gameObject.GetComponent<PlayerController>()?.OnHitByBoomerang(_throwerIndex, _velocity.normalized);
             Destroy(gameObject);
-            _ownerController.CatchBoomerang();
+            if (_ownerController != null) _ownerController.CatchBoomerang();
             return;
         }
 
@@ -165,6 +231,9 @@ public class Boomerang : MonoBehaviour
         {
             if (_bounceCount >= maxBounces)
             {
+#if UNITY_EDITOR
+                Debug.Log($"[Boomerang] Max bounces reached ({maxBounces}) — recalling");
+#endif
                 StartReturning();
                 return;
             }
@@ -173,6 +242,10 @@ public class Boomerang : MonoBehaviour
             normal.y  = 0f;
             _velocity = Vector3.Reflect(_velocity, normal.normalized);
             _bounceCount++;
+#if UNITY_EDITOR
+            Debug.Log($"[Boomerang] Wall bounce #{_bounceCount}");
+#endif
+            GameEvents.RaiseBoomerangWallBounce();
         }
     }
 }

@@ -5,6 +5,9 @@ using UnityEngine.InputSystem;
 [RequireComponent(typeof(Rigidbody))]
 public class PlayerController : MonoBehaviour
 {
+    [Header("Config (override SerializeField if assigned)")]
+    [SerializeField] private PlayerStatsSO statsSO;
+
     [Header("Movement Settings")]
     [SerializeField] private float moveSpeed     = 10f;
     [SerializeField] private float rotationSpeed = 50f;
@@ -19,6 +22,17 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float throwForce  = 20f;
     [SerializeField] private float spawnOffset = 1.2f;
     [SerializeField] private MeleeController melee;
+
+    [Header("Charge Throw")]
+    [SerializeField] private float chargeMinForce    = 15f;
+    [SerializeField] private float chargeMaxForce    = 40f;
+    [SerializeField] private float chargeMaxTime     = 1.0f;
+    [SerializeField] private float chargeMinDistance = 8f;
+    [SerializeField] private float chargeMaxDistance = 20f;
+
+    [Header("Knockback")]
+    [SerializeField] private float hitKnockbackForce   = 12f;
+    [SerializeField] private float parryKnockbackForce = 6f;
 
     [Header("Renderer")]
     public Renderer visual;
@@ -41,26 +55,96 @@ public class PlayerController : MonoBehaviour
     public Rigidbody Rb              { get; private set; }
     public bool      HasBoomerang    { get; set; } = true;
     public bool      CanDash         { get; set; } = true;
+    public bool      IsCharging      { get; set; } = false;
     public Vector2   MoveInput       { get => _moveInput; set => _moveInput = value; }
     public Vector3   MoveDirection   { get; private set; }
     public Vector3   LastMoveDirection => _lastMoveDirection;
     public MeleeController Melee => melee;
+    public int PlayerIndex => _playerIndex;
+    public float MoveSpeed => moveSpeed;
+    public Boomerang ActiveBoomerang { get; set; }
     #endregion
 
     // Expose settings to state (read-only)
-    public float DashForce    => dashForce;
-    public float DashDuration => dashDuration;
-    public float DashCooldown => dashCooldown;
+    public float DashForce       => dashForce;
+    public float DashDuration    => dashDuration;
+    public float DashCooldown    => dashCooldown;
+    public float ChargeMinForce  => chargeMinForce;
+    public float ChargeMaxForce  => chargeMaxForce;
+    public float ChargeMaxTime   => chargeMaxTime;
+    public float ThrowForce      => throwForce;
+    public float HitKnockback    => hitKnockbackForce;
+    public float ParryKnockback  => parryKnockbackForce;
+
+    private PlayerInput                          _playerInput;
+    private UnityEngine.InputSystem.InputAction  _throwAction;
+    private bool                                 _wasThrowPressedLastFrame;
 
     #region Unity Lifecycle
     private void Awake()
     {
+        ApplyStatsFromSO();
+
         Rb = GetComponent<Rigidbody>();
         Rb.freezeRotation = true;
         Rb.useGravity     = false;
         _lastMoveDirection = transform.forward;
 
+        EnsureRuntimeComponents();
         ChangeState(new PlayerIdleState());
+
+        // SendMessages mode tidak fire OnThrow di Canceled phase, dan
+        // onActionTriggered juga unreliable di mode itu.
+        // Solusi: poll InputAction langsung di Update untuk detect release.
+        _playerInput = GetComponent<PlayerInput>();
+        if (_playerInput != null)
+            _throwAction = _playerInput.actions?.FindAction("Throw");
+    }
+
+    private void Update()
+    {
+        if (_throwAction == null) return;
+
+        bool pressed = _throwAction.IsPressed();
+        if (_wasThrowPressedLastFrame && !pressed)
+        {
+#if UNITY_EDITOR
+            Debug.Log($"[Player {_playerIndex}] Throw RELEASE detected via polling");
+#endif
+            _currentState?.HandleThrowReleased(this);
+        }
+        _wasThrowPressedLastFrame = pressed;
+    }
+
+    private void EnsureRuntimeComponents()
+    {
+        if (GetComponent<StatusEffectController>() == null)
+            gameObject.AddComponent<StatusEffectController>();
+        if (GetComponent<HitFlash>() == null && visual != null)
+            gameObject.AddComponent<HitFlash>();
+        if (GetComponent<PlayerJuice>() == null && visual != null)
+            gameObject.AddComponent<PlayerJuice>();
+    }
+
+    public StatusEffectController Status => GetComponent<StatusEffectController>();
+
+    private void ApplyStatsFromSO()
+    {
+        if (statsSO == null) return;
+        moveSpeed     = statsSO.moveSpeed;
+        rotationSpeed = statsSO.rotationSpeed;
+        dashForce     = statsSO.dashForce;
+        dashDuration  = statsSO.dashDuration;
+        dashCooldown  = statsSO.dashCooldown;
+        throwForce    = statsSO.throwForce;
+        spawnOffset   = statsSO.spawnOffset;
+        chargeMinForce    = statsSO.chargeMinForce;
+        chargeMaxForce    = statsSO.chargeMaxForce;
+        chargeMaxTime     = statsSO.chargeMaxTime;
+        chargeMinDistance = statsSO.chargeMinDistance;
+        chargeMaxDistance = statsSO.chargeMaxDistance;
+        hitKnockbackForce   = statsSO.hitKnockbackForce;
+        parryKnockbackForce = statsSO.parryKnockbackForce;
     }
 
     private void FixedUpdate()
@@ -83,6 +167,8 @@ public class PlayerController : MonoBehaviour
 
     public void OnThrow(InputValue value)
     {
+        // SendMessages mode hanya fire saat Performed (press).
+        // Release ditangani onActionTriggered (Canceled phase).
         if (value.isPressed)
             _currentState?.HandleThrow(this);
     }
@@ -128,14 +214,42 @@ public class PlayerController : MonoBehaviour
 
     public void ThrowBoomerang()
     {
+        ThrowBoomerangCharged(0f);
+    }
+
+    public void ThrowBoomerangCharged(float charge01)
+    {
         HasBoomerang = false;
+
+        float force    = charge01 > 0f ? Mathf.Lerp(chargeMinForce, chargeMaxForce, charge01) : throwForce;
+        float distance = Mathf.Lerp(chargeMinDistance, chargeMaxDistance, charge01);
 
         Vector3 spawnPos  = transform.position + _lastMoveDirection.normalized * spawnOffset;
         GameObject boomObj = Instantiate(boomerangPrefab, spawnPos, Quaternion.identity);
         Boomerang boomScript = boomObj.GetComponent<Boomerang>();
 
-        boomScript.Launch(this.transform, _lastMoveDirection, throwForce);
+        boomScript.Launch(this.transform, _lastMoveDirection, force);
         boomScript.SetTrailColor(GetComponentInChildren<Renderer>()?.material.color ?? Color.white);
+        boomScript.SetThrowerIndex(_playerIndex);
+        if (charge01 > 0f) boomScript.SetMaxDistance(distance);
+        ActiveBoomerang = boomScript;
+
+#if UNITY_EDITOR
+        Debug.Log($"[Player {_playerIndex}] Throw charge={charge01:F2} force={force:F1} dist={distance:F1}");
+#endif
+
+        GameEvents.RaiseBoomerangThrown(_playerIndex);
+    }
+
+    public void RequestRecall()
+    {
+        if (ActiveBoomerang != null)
+        {
+#if UNITY_EDITOR
+            Debug.Log($"[Player {_playerIndex}] Recall requested");
+#endif
+            ActiveBoomerang.ForceRecall();
+        }
     }
     #endregion
 
@@ -150,11 +264,22 @@ public class PlayerController : MonoBehaviour
     public void CatchBoomerang()
     {
         HasBoomerang = true;
+        ActiveBoomerang = null;
+#if UNITY_EDITOR
+        Debug.Log($"[Player {_playerIndex}] Caught boomerang");
+#endif
+        GameEvents.RaiseBoomerangCaught(_playerIndex);
     }
 
-    public void OnHitByBoomerang()
+    public void OnHitByBoomerang(int killerIndex = -1, Vector3 hitDirection = default)
     {
         if (!gameObject.activeSelf) return;
+
+#if UNITY_EDITOR
+        Debug.Log($"[Player {_playerIndex}] Hit by killer={killerIndex} dir={hitDirection}");
+#endif
+
+        ApplyKnockback(hitDirection, hitKnockbackForce);
 
         if (deathParticlePrefab != null)
         {
@@ -166,6 +291,13 @@ public class PlayerController : MonoBehaviour
 
         // HitEffectManager.Instance?.TriggerKillEffect();
         LivesSystem.Instance?.PlayerDied(_playerIndex, this);
+    }
+
+    public void ApplyKnockback(Vector3 direction, float force)
+    {
+        if (Rb == null || force <= 0f || direction.sqrMagnitude < 0.001f) return;
+        direction.y = 0f;
+        Rb.AddForce(direction.normalized * force, ForceMode.Impulse);
     }
 
     public void ResetState()

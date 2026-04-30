@@ -11,6 +11,13 @@ public class PlayerDashingState : IPlayerState
             ? player.MoveDirection
             : player.LastMoveDirection;
 
+#if UNITY_EDITOR
+        Debug.Log($"[Player {player.PlayerIndex}] Dash dir={dir} force={player.DashForce}");
+#endif
+
+        // Anticipation: pre-dash crouch via PlayerJuice subscriber
+        GameEvents.RaisePlayerDashed(player.PlayerIndex);
+
         player.Rb.linearVelocity = dir * player.DashForce;
         player.StartCoroutine(DashRoutine(player));
     }
@@ -23,6 +30,7 @@ public class PlayerDashingState : IPlayerState
     public void HandleMove(PlayerController player, Vector2 input) { }
     public void HandleDash(PlayerController player) { }
     public void HandleThrow(PlayerController player) { }
+    public void HandleThrowReleased(PlayerController player) { }
 
     public void FixedUpdate(PlayerController player) { }
 

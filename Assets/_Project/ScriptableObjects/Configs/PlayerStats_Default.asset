@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 59ee3a8728ad442f6abd52b02786854e, type: 3}
+  m_Name: PlayerStats_Default
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerStatsSO
+  moveSpeed: 10
+  rotationSpeed: 50
+  dashForce: 25
+  dashDuration: 0.2
+  dashCooldown: 1
+  throwForce: 20
+  spawnOffset: 1.2
+  chargeMinForce: 15
+  chargeMaxForce: 40
+  chargeMaxTime: 1
+  chargeMaxDistance: 20
+  chargeMinDistance: 8
+  hitKnockbackForce: 12
+  parryKnockbackForce: 6

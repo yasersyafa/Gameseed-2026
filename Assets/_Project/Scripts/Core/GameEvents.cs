@@ -35,6 +35,35 @@ public static class GameEvents
     /// <summary>Countdown tick — 3, 2, 1, lalu 0 (GO).</summary>
     public static event Action<int> OnCountdownTick;
 
+    // ── Combat / boomerang ────────────────────────────────────────────────────
+
+    /// <summary>Player melempar boomerang.</summary>
+    public static event Action<int> OnBoomerangThrown;
+
+    /// <summary>Player menangkap boomerang kembali.</summary>
+    public static event Action<int> OnBoomerangCaught;
+
+    /// <summary>Player melakukan dash.</summary>
+    public static event Action<int> OnPlayerDashed;
+
+    /// <summary>Player mulai charging throw.</summary>
+    public static event Action<int> OnChargeStarted;
+
+    /// <summary>Player release charging throw — float = charge level 0..1.</summary>
+    public static event Action<int, float> OnChargeReleased;
+
+    /// <summary>Boomerang berhasil di-parry oleh melee.</summary>
+    public static event Action<int> OnBoomerangParried;
+
+    /// <summary>Boomerang ricochet ke wall.</summary>
+    public static event Action OnBoomerangWallBounce;
+
+    /// <summary>Pickup spawned di arena.</summary>
+    public static event Action OnPickupSpawned;
+
+    /// <summary>Player ambil pickup — int = playerIndex, PowerUpSO.PowerUpKey.</summary>
+    public static event Action<int, int> OnPickupCollected;
+
     // ── Raise helpers (dipanggil sistem yang fire event) ─────────────────────
 
     public static void RaisePlayerEliminated(int index, PlayerController controller)
@@ -61,6 +90,33 @@ public static class GameEvents
     public static void RaiseCountdownTick(int value)
         => OnCountdownTick?.Invoke(value);
 
+    public static void RaiseBoomerangThrown(int playerIndex)
+        => OnBoomerangThrown?.Invoke(playerIndex);
+
+    public static void RaiseBoomerangCaught(int playerIndex)
+        => OnBoomerangCaught?.Invoke(playerIndex);
+
+    public static void RaisePlayerDashed(int playerIndex)
+        => OnPlayerDashed?.Invoke(playerIndex);
+
+    public static void RaiseChargeStarted(int playerIndex)
+        => OnChargeStarted?.Invoke(playerIndex);
+
+    public static void RaiseChargeReleased(int playerIndex, float charge01)
+        => OnChargeReleased?.Invoke(playerIndex, charge01);
+
+    public static void RaiseBoomerangParried(int playerIndex)
+        => OnBoomerangParried?.Invoke(playerIndex);
+
+    public static void RaiseBoomerangWallBounce()
+        => OnBoomerangWallBounce?.Invoke();
+
+    public static void RaisePickupSpawned()
+        => OnPickupSpawned?.Invoke();
+
+    public static void RaisePickupCollected(int playerIndex, int powerUpKey)
+        => OnPickupCollected?.Invoke(playerIndex, powerUpKey);
+
     /// <summary>
     /// Bersihkan semua subscriber — panggil saat scene reload
     /// agar tidak ada stale reference.
@@ -75,5 +131,14 @@ public static class GameEvents
         OnGameOver          = null;
         OnScoresUpdated     = null;
         OnCountdownTick     = null;
+        OnBoomerangThrown      = null;
+        OnBoomerangCaught      = null;
+        OnPlayerDashed         = null;
+        OnChargeStarted        = null;
+        OnChargeReleased       = null;
+        OnBoomerangParried     = null;
+        OnBoomerangWallBounce  = null;
+        OnPickupSpawned        = null;
+        OnPickupCollected      = null;
     }
 }
