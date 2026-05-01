@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 937bad82bc49f437692e4a384ee13580, type: 3}
   m_Name: IrisConfig
   m_EditorClassIdentifier: Assembly-CSharp::IrisConfigSO
-  closeDelay: 0.4
-  closeDuration: 0.7
-  holdAtClosed: 0.35
-  openDuration: 0.5
+  closeDelay: 1
+  closeDuration: 1
+  holdAtClosed: 0.5
+  openDuration: 1
   fullRadius: 1.6
   closedRadius: 0
   gameOverDurationMul: 1.5
