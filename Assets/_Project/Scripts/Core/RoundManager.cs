@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using VContainer;
+using VContainer.Unity;
 
 public class RoundManager : MonoBehaviour
 {
@@ -15,13 +16,12 @@ public class RoundManager : MonoBehaviour
     private GameManager              _gameManager;
     private LivesSystem              _lives;
     private CinemachineCameraManager _cam;
+    private IObjectResolver          _resolver;
 
     [Inject]
-    public void Construct(GameManager gm, LivesSystem lives, CinemachineCameraManager cam)
+    public void Construct(IObjectResolver resolver)
     {
-        _gameManager = gm;
-        _lives       = lives;
-        _cam         = cam;
+        _resolver = resolver;
     }
 
     private int[] _scores;
@@ -33,6 +33,13 @@ public class RoundManager : MonoBehaviour
     private void Awake()
     {
         ApplyConfigFromSO();
+    }
+
+    private void Start()
+    {
+        _gameManager = _resolver?.Resolve<GameManager>();
+        _lives       = _resolver?.Resolve<LivesSystem>();
+        _cam         = _resolver?.Resolve<CinemachineCameraManager>();
     }
 
     private void ApplyConfigFromSO()

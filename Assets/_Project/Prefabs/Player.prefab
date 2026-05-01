@@ -423,6 +423,8 @@ GameObject:
   - component: {fileID: 3229386887657464488}
   - component: {fileID: 6657089563190869972}
   - component: {fileID: 9202201933994852699}
+  - component: {fileID: -7880699559745359689}
+  - component: {fileID: -8512142983349290012}
   m_Layer: 7
   m_Name: Player
   m_TagString: Player
@@ -559,6 +561,30 @@ MonoBehaviour:
   m_DefaultActionMap: Player
   m_SplitScreenIndex: -1
   m_Camera: {fileID: 0}
+--- !u!114 &-7880699559745359689
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4025924577785526124}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4af968857dff74bed976c17745c65165, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PowerUpController
+--- !u!114 &-8512142983349290012
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4025924577785526124}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ef214cc629e5b4e5aa17fcdb387da495, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::StatusEffectController
 --- !u!1 &5894638237495359753
 GameObject:
   m_ObjectHideFlags: 0

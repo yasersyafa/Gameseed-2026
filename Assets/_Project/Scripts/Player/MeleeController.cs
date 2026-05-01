@@ -39,11 +39,19 @@ public class MeleeController : MonoBehaviour
         _swingTween = transform
             .DOLocalRotate(new Vector3(0f, endAngle, 0f), swingDuration)
             .SetEase(swingEase)
+            .SetLink(gameObject, LinkBehaviour.KillOnDestroy)
             .OnComplete(() =>
             {
+                if (this == null || gameObject == null) return;
                 gameObject.SetActive(false);
                 onComplete?.Invoke();
             });
+    }
+
+    private void OnDestroy()
+    {
+        _swingTween?.Kill();
+        transform.DOKill();
     }
 
     public void CancelSwing()
@@ -73,7 +81,6 @@ public class MeleeController : MonoBehaviour
             // Parrier sekarang punya boomerang baru ini sebagai active
             parrier.ActiveBoomerang = boomerang;
 
-            _hits?.TriggerKillEffect();
             GameEvents.RaiseBoomerangParried(parrier.PlayerIndex);
 
 #if UNITY_EDITOR

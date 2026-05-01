@@ -11,12 +11,13 @@ public class LivesSystem : MonoBehaviour
     [SerializeField] private int   livesPerPlayer = 1;
     [SerializeField] private float respawnDelay   = 2f;
 
-    private RoundManager _round;
+    private RoundManager    _round;
+    private IObjectResolver _resolver;
 
     [Inject]
-    public void Construct(RoundManager round)
+    public void Construct(IObjectResolver resolver)
     {
-        _round = round;
+        _resolver = resolver;
     }
 
     private Transform[] _spawnPoints;
@@ -27,6 +28,11 @@ public class LivesSystem : MonoBehaviour
     private void Awake()
     {
         ApplyConfigFromSO();
+    }
+
+    private void Start()
+    {
+        _round = _resolver?.Resolve<RoundManager>();
     }
 
     private void ApplyConfigFromSO()

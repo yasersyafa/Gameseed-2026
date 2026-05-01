@@ -12,10 +12,8 @@ public class GameManager : MonoBehaviour
     private IObjectResolver           _resolver;
 
     [Inject]
-    public void Construct(RoundManager round, CinemachineCameraManager cam, IObjectResolver resolver)
+    public void Construct(IObjectResolver resolver)
     {
-        _round    = round;
-        _cam      = cam;
         _resolver = resolver;
     }
 
@@ -58,6 +56,9 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
+        _round = _resolver?.Resolve<RoundManager>();
+        _cam   = _resolver?.Resolve<CinemachineCameraManager>();
+
         if (autoJoinKeyboard1)
         {
             _inputManager.JoinPlayer(

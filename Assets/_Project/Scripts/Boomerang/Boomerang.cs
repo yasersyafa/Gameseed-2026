@@ -30,10 +30,27 @@ public class Boomerang : MonoBehaviour
     [Header("Visual Effect")]
     [SerializeField] private TrailRenderer trail;
 
+    [Header("Spin Scaling")]
+    [SerializeField] private float spinScaleMin = 0.5f;
+    [SerializeField] private float spinScaleMax = 1.6f;
+
+    [Header("Whoosh Loop")]
+    [SerializeField] private AudioClip whooshClip;
+    [SerializeField] private float whooshVolume   = 0.4f;
+    [SerializeField] private float whooshPitchMin = 0.7f;
+    [SerializeField] private float whooshPitchMax = 1.5f;
+    private AudioSource _whooshSource;
+
     private Vector3 _spawnPosition;
     private int     _bounceCount   = 0;
     private int     _throwerIndex  = -1;
     private float   _maxDistanceOverride = -1f;
+
+    // Power-up modifiers
+    public StatusEffectType OnHitStatus { get; set; } = StatusEffectType.None;
+    public float            OnHitStatusDuration { get; set; } = 1.5f;
+    public bool             ExplodeOnHit { get; set; } = false;
+    public float            ExplodeRadius { get; set; } = 3f;
 
     private Rigidbody _rb;
 
@@ -55,6 +72,29 @@ public class Boomerang : MonoBehaviour
         _rb.constraints = RigidbodyConstraints.FreezePositionY
                         | RigidbodyConstraints.FreezeRotationX
                         | RigidbodyConstraints.FreezeRotationZ;
+
+        if (whooshClip != null)
+        {
+            _whooshSource = gameObject.AddComponent<AudioSource>();
+            _whooshSource.clip         = whooshClip;
+            _whooshSource.loop         = true;
+            _whooshSource.volume       = whooshVolume;
+            _whooshSource.spatialBlend = 0.6f;
+            _whooshSource.pitch        = whooshPitchMin;
+            _whooshSource.Play();
+        }
+
+        if (trail == null)
+        {
+            var trailGo = new GameObject("Trail");
+            trailGo.transform.SetParent(transform, false);
+            trail = trailGo.AddComponent<TrailRenderer>();
+            trail.time       = 0.3f;
+            trail.startWidth = 0.45f;
+            trail.endWidth   = 0f;
+            var shader = Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Unlit/Color");
+            trail.material = new Material(shader);
+        }
     }
 
     private void ApplyStatsFromSO()
@@ -203,7 +243,14 @@ public class Boomerang : MonoBehaviour
 
     private void SpinSelf()
     {
-        transform.Rotate(Vector3.up, spinSpeed * Time.deltaTime, Space.World);
+        float speedFactor = _speed > 0.01f
+            ? Mathf.Clamp01(_velocity.magnitude / _speed)
+            : 0f;
+        float dynamicSpin = spinSpeed * Mathf.Lerp(spinScaleMin, spinScaleMax, speedFactor);
+        transform.Rotate(Vector3.up, dynamicSpin * Time.deltaTime, Space.World);
+
+        if (_whooshSource != null)
+            _whooshSource.pitch = Mathf.Lerp(whooshPitchMin, whooshPitchMax, speedFactor);
     }
 
     private void OnCollisionEnter(Collision collision)
@@ -220,7 +267,15 @@ public class Boomerang : MonoBehaviour
         if (collision.gameObject.CompareTag(playerTag))
         {
             _hasHit = true;
-            collision.gameObject.GetComponent<PlayerController>()?.OnHitByBoomerang(_throwerIndex, _velocity.normalized);
+            var victim = collision.gameObject.GetComponent<PlayerController>();
+            if (victim != null)
+            {
+                // Power-up status sebelum kill
+                if (OnHitStatus != StatusEffectType.None)
+                    victim.Status?.Apply(OnHitStatus, OnHitStatusDuration, _throwerIndex);
+
+                victim.OnHitByBoomerang(_throwerIndex, _velocity.normalized);
+            }
             Destroy(gameObject);
             if (_ownerController != null) _ownerController.CatchBoomerang();
             return;

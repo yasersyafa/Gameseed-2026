@@ -15,5 +15,7 @@ public class RootLifetimeScope : LifetimeScope
         builder.RegisterComponentInHierarchy<HitEffectManager>();
         builder.RegisterComponentInHierarchy<AudioManager>();
         builder.RegisterComponentInHierarchy<CinemachineCameraManager>();
+        builder.RegisterComponentInHierarchy<SettingsManager>();
+        builder.RegisterComponentInHierarchy<RumbleManager>();
     }
 }

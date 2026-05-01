@@ -83,25 +83,51 @@ public class PlayerJuice : MonoBehaviour
     {
         if (!IsMine(idx)) return;
 #if UNITY_EDITOR
-        Debug.Log($"[Juice {idx}] charge release punch charge={charge01:F2}");
+        Debug.Log($"[Juice {idx}] charge release anticipation+punch charge={charge01:F2}");
 #endif
-        Punch(chargeReleasePunch * (0.5f + 0.5f * charge01), throwStretchTime);
+        Anticipate(chargeReleasePunch * (0.5f + 0.5f * charge01));
+    }
+
+    private void Anticipate(float amount)
+    {
+        if (_target == null) return;
+        _activeTween?.Kill();
+        Vector3 squashScale = Vector3.Scale(_baseScale, new Vector3(1f - amount * 0.5f, 1f - amount * 0.5f, 1f - amount * 0.5f));
+        Vector3 burstScale  = Vector3.Scale(_baseScale, new Vector3(1f + amount, 1f + amount, 1f + amount));
+
+        _target.localScale = squashScale;
+        var seq = DOTween.Sequence();
+        seq.Append(_target.DOScale(burstScale, 0.08f).SetEase(Ease.OutBack))
+           .Append(_target.DOScale(_baseScale, 0.18f).SetEase(Ease.OutQuad))
+           .SetUpdate(true)
+           .SetLink(_target.gameObject, LinkBehaviour.KillOnDestroy);
+        _activeTween = seq;
+    }
+
+    private void OnDestroy()
+    {
+        _activeTween?.Kill();
+        if (_target != null) _target.DOKill();
     }
 
     private void Squash(Vector3 squashScale, float duration)
     {
+        if (_target == null) return;
         _activeTween?.Kill();
         _target.localScale = Vector3.Scale(_baseScale, squashScale);
         _activeTween = _target.DOScale(_baseScale, duration)
             .SetEase(Ease.OutBack)
-            .SetUpdate(true);
+            .SetUpdate(true)
+            .SetLink(_target.gameObject, LinkBehaviour.KillOnDestroy);
     }
 
     private void Punch(float amount, float duration)
     {
+        if (_target == null) return;
         _activeTween?.Kill();
         _target.localScale = _baseScale;
         _activeTween = _target.DOPunchScale(Vector3.one * amount, duration, 6, 0.6f)
-            .SetUpdate(true);
+            .SetUpdate(true)
+            .SetLink(_target.gameObject, LinkBehaviour.KillOnDestroy);
     }
 }

@@ -31,7 +31,8 @@ public class PlayerChargingState : IPlayerState
             _pulseTween = t.DOScale(t.localScale * 1.08f, 0.25f)
                 .SetLoops(-1, LoopType.Yoyo)
                 .SetEase(Ease.InOutSine)
-                .SetUpdate(true);
+                .SetUpdate(true)
+                .SetLink(t.gameObject, LinkBehaviour.KillOnDestroy);
         }
     }
 

@@ -210,10 +210,47 @@ public class AudioManager : MonoBehaviour
     private void HandleThrow(int playerIndex)        => Play(AudioCueId.BoomerangThrow);
     private void HandleCatch(int playerIndex)        => Play(AudioCueId.BoomerangCatch);
     private void HandleDash(int playerIndex)         => Play(AudioCueId.PlayerDash);
-    private void HandleHit(int i, PlayerController c)        => Play(AudioCueId.PlayerHit);
-    private void HandleDeath(int i, PlayerController c)      => Play(AudioCueId.PlayerDeath);
+    private void HandleHit(int i, PlayerController c)
+    {
+        Play(AudioCueId.PlayerHit);
+        DuckMusic(0.4f, 0.35f);
+    }
+    private void HandleDeath(int i, PlayerController c)
+    {
+        Play(AudioCueId.PlayerDeath);
+        DuckMusic(0.25f, 0.6f);
+    }
     private void HandleRoundEnd(int winnerIndex)             => Play(AudioCueId.RoundWin);
     private void HandleGameOver(int winnerIndex)             => Play(AudioCueId.MatchWin);
+
+    // ── Music ducking ────────────────────────────────────────────────────────
+    private Coroutine _duckRoutine;
+
+    private void DuckMusic(float duckTo01, float duration)
+    {
+        if (_musicSource == null) return;
+        if (_duckRoutine != null) StopCoroutine(_duckRoutine);
+        _duckRoutine = StartCoroutine(DuckRoutine(duckTo01, duration));
+    }
+
+    private System.Collections.IEnumerator DuckRoutine(float duckTo, float duration)
+    {
+        float origVol = _musicVolume;
+        float duckVol = origVol * duckTo;
+        _musicSource.volume = duckVol;
+        yield return new WaitForSecondsRealtime(duration);
+        // smooth restore
+        float t = 0f;
+        const float restore = 0.4f;
+        while (t < restore)
+        {
+            t += Time.unscaledDeltaTime;
+            _musicSource.volume = Mathf.Lerp(duckVol, origVol, t / restore);
+            yield return null;
+        }
+        _musicSource.volume = origVol;
+        _duckRoutine = null;
+    }
 
     private void HandleCountdown(int value)
     {

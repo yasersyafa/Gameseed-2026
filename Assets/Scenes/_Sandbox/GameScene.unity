@@ -475,9 +475,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 37a9e6012f59642a0b4e2c84875e9f9e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HitEffectManager
-  slowTimeScale: 0.15
-  slowDuration: 0.2
+  lightTimeScale: 0.35
+  lightDuration: 0.12
+  mediumTimeScale: 0.15
+  mediumDuration: 0.2
+  heavyTimeScale: 0.08
+  heavyDuration: 0.3
   recoverySpeed: 8
+  parryStopDuration: 0.08
+  winFlourishScale: 0.08
+  winFlourishDuration: 1.6
+  roundEndFreeze: 0.18
 --- !u!1 &552570208
 GameObject:
   m_ObjectHideFlags: 0
@@ -1873,6 +1881,58 @@ Transform:
   - {fileID: 325072281}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &765428708
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 765428709}
+  - component: {fileID: 765428710}
+  m_Layer: 0
+  m_Name: PickupSpawner
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &765428709
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 765428708}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1893729015}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &765428710
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 765428708}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: afba1bab09602426cb60078e5e359e1b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PickupSpawner
+  pickupPrefab: {fileID: 4500118633423630051, guid: 56f413a63db8f45ea9b99a64119ae7fd, type: 3}
+  anchors:
+  - {fileID: 325072281}
+  pool:
+  - {fileID: 11400000, guid: cb2fcf8c1b1b8459a9538853d4930fb7, type: 2}
+  spawnInterval: 5
+  initialDelay: 3
+  maxConcurrent: 3
 --- !u!1 &821714342
 GameObject:
   m_ObjectHideFlags: 0
@@ -2407,6 +2467,68 @@ Mesh:
       - serializedVersion: 1
         m_IndexStart: 0
         m_IndexCount: 0
+--- !u!1 &954459248
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 954459249}
+  - component: {fileID: 954459251}
+  - component: {fileID: 954459250}
+  m_Layer: 0
+  m_Name: SettingsManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &954459249
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 954459248}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1893729015}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &954459250
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 954459248}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 58d463f6cdfa448a79becaad147b76d5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RumbleManager
+  hitProfile: {x: 0.3, y: 0.5, z: 0.15}
+  deathProfile: {x: 0.8, y: 1, z: 0.3}
+  parryProfile: {x: 0.5, y: 0.7, z: 0.1}
+  dashProfile: {x: 0.2, y: 0.3, z: 0.08}
+  throwProfile: {x: 0.15, y: 0.25, z: 0.06}
+--- !u!114 &954459251
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 954459248}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f2d6450dfe4444ea58418de04adbe497, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SettingsManager
 --- !u!43 &1052955285
 Mesh:
   m_ObjectHideFlags: 0
@@ -3698,6 +3820,9 @@ MonoBehaviour:
   impulseSource: {fileID: 1058710347}
   targetWeight: 1
   targetRadius: 5
+  smallShake: 0.5
+  mediumShake: 1.5
+  largeShake: 3
 --- !u!114 &1542131971
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4077,6 +4202,8 @@ Transform:
   - {fileID: 464293597}
   - {fileID: 1909089400}
   - {fileID: 187986238}
+  - {fileID: 765428709}
+  - {fileID: 954459249}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1893729016
@@ -4172,8 +4299,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4e19e4fbdec974c3ea0789b8db51c2b8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RoundManager
-  configSO: {fileID: 0}
-  pointsToWin: 5
+  configSO: {fileID: 11400000, guid: 498749150853a48bf939c7a163fd443c, type: 2}
+  pointsToWin: 3
   countdownDuration: 3
   roundEndDelay: 2
 --- !u!1 &1943099004

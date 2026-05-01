@@ -136,7 +136,17 @@ public class PlayerController : MonoBehaviour
             gameObject.AddComponent<HitFlash>();
         if (GetComponent<PlayerJuice>() == null && visual != null)
             gameObject.AddComponent<PlayerJuice>();
+        if (GetComponent<PowerUpController>() == null)
+            gameObject.AddComponent<PowerUpController>();
+        if (GetComponent<PlayerSmokeEffect>() == null)
+            gameObject.AddComponent<PlayerSmokeEffect>();
+        if (GetComponent<DashTrail>() == null)
+            gameObject.AddComponent<DashTrail>();
+        if (GetComponent<DeathSplat>() == null)
+            gameObject.AddComponent<DeathSplat>();
     }
+
+    public PowerUpController PowerUps => GetComponent<PowerUpController>();
 
     public StatusEffectController Status => GetComponent<StatusEffectController>();
 
@@ -246,6 +256,9 @@ public class PlayerController : MonoBehaviour
         if (charge01 > 0f) boomScript.SetMaxDistance(distance);
         ActiveBoomerang = boomScript;
 
+        // Power-ups bisa modify boomerang baru ini (Multi, Fire, Ice, Explosive)
+        PowerUps?.OnBeforeThrow(boomScript);
+
 #if UNITY_EDITOR
         Debug.Log($"[Player {_playerIndex}] Throw charge={charge01:F2} force={force:F1} dist={distance:F1}");
 #endif
@@ -290,6 +303,16 @@ public class PlayerController : MonoBehaviour
 #if UNITY_EDITOR
         Debug.Log($"[Player {_playerIndex}] Hit by killer={killerIndex} dir={hitDirection}");
 #endif
+
+        // Power-up shield bisa absorb hit
+        if (PowerUps != null && PowerUps.OnBeforeHit(killerIndex, hitDirection))
+        {
+            ApplyKnockback(hitDirection, parryKnockbackForce);
+#if UNITY_EDITOR
+            Debug.Log($"[Player {_playerIndex}] Hit absorbed by power-up");
+#endif
+            return;
+        }
 
         ApplyKnockback(hitDirection, hitKnockbackForce);
 
