@@ -16,6 +16,8 @@ public class GameHUDOverlay : MonoBehaviour
     private Camera _cam;
 
     private readonly Dictionary<int, RectTransform> _powerUpRows = new();
+    private readonly Dictionary<int, RectTransform> _offScreenArrows = new();
+    private GameManager _gameManager;
 
     private void Awake()
     {
@@ -173,6 +175,95 @@ public class GameHUDOverlay : MonoBehaviour
         hl.childForceExpandHeight = false;
 
         _powerUpRows[playerIndex] = rt;
+        return rt;
+    }
+
+    // ── Off-screen player arrows ──────────────────────────────────────────────
+    private void LateUpdate()
+    {
+        if (_cam == null) _cam = Camera.main;
+        if (_cam == null || _rootRect == null) return;
+        if (_gameManager == null) _gameManager = FindFirstObjectByType<GameManager>();
+        if (_gameManager == null) return;
+
+        var players = _gameManager.GetAllPlayers();
+        for (int i = 0; i < players.Count; i++)
+        {
+            var p = players[i];
+            if (p == null || p.IsEliminated) { HideArrow(i); continue; }
+
+            Vector3 vp = _cam.WorldToViewportPoint(p.transform.position);
+            bool behindCam = vp.z < 0f;
+            bool onScreen  = !behindCam && vp.x >= 0f && vp.x <= 1f && vp.y >= 0f && vp.y <= 1f;
+            if (onScreen) { HideArrow(i); continue; }
+
+            ShowArrow(i, p, vp, behindCam);
+        }
+    }
+
+    private void HideArrow(int idx)
+    {
+        if (_offScreenArrows.TryGetValue(idx, out var rt) && rt != null)
+            rt.gameObject.SetActive(false);
+    }
+
+    private void ShowArrow(int idx, PlayerController p, Vector3 vp, bool behindCam)
+    {
+        var rt = GetOrCreateArrow(idx, p);
+        if (rt == null) return;
+
+        // If behind camera, mirror coords
+        if (behindCam) { vp.x = 1f - vp.x; vp.y = 1f - vp.y; }
+
+        // Direction from screen center to off-screen target (in viewport space)
+        Vector2 center = new(0.5f, 0.5f);
+        Vector2 target = new(vp.x, vp.y);
+        Vector2 dir    = (target - center);
+        if (dir.sqrMagnitude < 0.0001f) dir = Vector2.up;
+        dir.Normalize();
+
+        // Clamp to canvas edge with small margin
+        const float margin = 0.06f;
+        float halfW = 0.5f - margin;
+        float halfH = 0.5f - margin;
+        float scale = Mathf.Min(halfW / Mathf.Abs(dir.x + 1e-4f), halfH / Mathf.Abs(dir.y + 1e-4f));
+        Vector2 edgeVp = center + dir * scale;
+
+        // Convert viewport to screen pos for canvas overlay
+        Vector2 screenPos = new(edgeVp.x * Screen.width, edgeVp.y * Screen.height);
+        rt.position = screenPos;
+
+        // Rotate arrow toward off-screen target
+        float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg - 90f;
+        rt.rotation = Quaternion.Euler(0f, 0f, angle);
+
+        if (!rt.gameObject.activeSelf) rt.gameObject.SetActive(true);
+    }
+
+    private RectTransform GetOrCreateArrow(int idx, PlayerController p)
+    {
+        if (_offScreenArrows.TryGetValue(idx, out var existing) && existing != null) return existing;
+
+        var go = new GameObject($"OffScreenArrow_{idx}");
+        go.transform.SetParent(_rootRect, false);
+        var rt = go.AddComponent<RectTransform>();
+        rt.sizeDelta = new Vector2(80f, 80f);
+        rt.anchorMin = rt.anchorMax = new Vector2(0f, 0f);
+        rt.pivot = new Vector2(0.5f, 0.5f);
+
+        Color tint = (p.visual != null) ? p.visual.material.color : Color.white;
+
+        var txt = go.AddComponent<Text>();
+        txt.alignment = TextAnchor.MiddleCenter;
+        txt.fontSize  = 72;
+        txt.fontStyle = FontStyle.Bold;
+        txt.color     = tint;
+        txt.font      = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        txt.text      = "▲";
+        txt.horizontalOverflow = HorizontalWrapMode.Overflow;
+        txt.verticalOverflow   = VerticalWrapMode.Overflow;
+
+        _offScreenArrows[idx] = rt;
         return rt;
     }
 

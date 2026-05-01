@@ -14,6 +14,7 @@ public static class HUDBootstrap
         Object.DontDestroyOnLoad(go);
         go.AddComponent<GameHUDOverlay>();
         go.AddComponent<SettingsScreen>();
+        go.AddComponent<IrisTransition>();
 
 #if UNITY_EDITOR
         Debug.Log("[HUDBootstrap] GameHUDOverlay + SettingsScreen spawned");

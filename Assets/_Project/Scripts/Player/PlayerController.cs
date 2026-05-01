@@ -70,9 +70,11 @@ public class PlayerController : MonoBehaviour
     public float DashForce       => dashForce;
     public float DashDuration    => dashDuration;
     public float DashCooldown    => dashCooldown;
-    public float ChargeMinForce  => chargeMinForce;
-    public float ChargeMaxForce  => chargeMaxForce;
-    public float ChargeMaxTime   => chargeMaxTime;
+    public float ChargeMinForce    => chargeMinForce;
+    public float ChargeMaxForce    => chargeMaxForce;
+    public float ChargeMaxTime     => chargeMaxTime;
+    public float ChargeMinDistance => chargeMinDistance;
+    public float ChargeMaxDistance => chargeMaxDistance;
     public float ThrowForce      => throwForce;
     public float HitKnockback    => hitKnockbackForce;
     public float ParryKnockback  => parryKnockbackForce;
@@ -144,6 +146,8 @@ public class PlayerController : MonoBehaviour
             gameObject.AddComponent<DashTrail>();
         if (GetComponent<DeathSplat>() == null)
             gameObject.AddComponent<DeathSplat>();
+        if (GetComponent<AimIndicator>() == null)
+            gameObject.AddComponent<AimIndicator>();
     }
 
     public PowerUpController PowerUps => GetComponent<PowerUpController>();
