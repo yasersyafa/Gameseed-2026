@@ -16,7 +16,7 @@ MonoBehaviour:
   displayName: Fireball
   description: 
   icon: {fileID: 0}
-  tint: {r: 1, g: 1, b: 1, a: 1}
+  tint: {r: 1, g: 0.36320752, b: 0.36320752, a: 1}
   durationSec: 15
   stackable: 0
   mutex: 1

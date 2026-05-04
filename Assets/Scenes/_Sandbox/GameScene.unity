@@ -1928,6 +1928,7 @@ MonoBehaviour:
   pickupPrefab: {fileID: 4500118633423630051, guid: 56f413a63db8f45ea9b99a64119ae7fd, type: 3}
   anchors:
   - {fileID: 325072281}
+  - {fileID: 1492049832}
   pool:
   - {fileID: 11400000, guid: cb2fcf8c1b1b8459a9538853d4930fb7, type: 2}
   spawnInterval: 5
@@ -2753,7 +2754,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachineImpulseSource
   ImpulseDefinition:
     ImpulseChannel: 1
-    ImpulseShape: 0
+    ImpulseShape: 2
     CustomImpulseShape:
       serializedVersion: 2
       m_Curve:
@@ -2778,7 +2779,7 @@ MonoBehaviour:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
-    ImpulseDuration: 0.2
+    ImpulseDuration: 0.15
     ImpulseType: 0
     DissipationRate: 0.25
     RawSignal: {fileID: 0}
