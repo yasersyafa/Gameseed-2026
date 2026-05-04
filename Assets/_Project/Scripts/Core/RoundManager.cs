@@ -17,6 +17,7 @@ public class RoundManager : MonoBehaviour
     private LivesSystem              _lives;
     private CinemachineCameraManager _cam;
     private IObjectResolver          _resolver;
+    private IrisTransition           _iris;
 
     [Inject]
     public void Construct(IObjectResolver resolver)
@@ -40,6 +41,7 @@ public class RoundManager : MonoBehaviour
         _gameManager = _resolver?.Resolve<GameManager>();
         _lives       = _resolver?.Resolve<LivesSystem>();
         _cam         = _resolver?.Resolve<CinemachineCameraManager>();
+        _iris        = FindFirstObjectByType<IrisTransition>();
     }
 
     private void ApplyConfigFromSO()
@@ -73,6 +75,11 @@ public class RoundManager : MonoBehaviour
 
         ResetAllPlayers();
         SetAllPlayersFreeze(true);
+
+        // Iris fully open before any countdown shows / gameplay arms.
+        // Skip on first round — iris already at fullRadius from Awake.
+        if (_iris != null && _currentRound > 1)
+            yield return _iris.CoOpen();
 
         for (int i = Mathf.RoundToInt(countdownDuration); i > 0; i--)
         {
@@ -118,9 +125,14 @@ public class RoundManager : MonoBehaviour
             yield break;
         }
 
-        yield return YieldCollection.WaitForSeconds(roundEndDelay);
+        // Gate next round on iris close+hold completion. Fallback to fixed delay
+        // when iris not present (e.g. headless / HUDBootstrap skipped).
+        if (_iris != null)
+            yield return _iris.CoCloseAndHold(winnerIndex);
+        else
+            yield return YieldCollection.WaitForSeconds(roundEndDelay);
 
-        StartCoroutine(StartRoundRoutine());
+        yield return StartCoroutine(StartRoundRoutine());
     }
 
     private void ResetAllPlayers()

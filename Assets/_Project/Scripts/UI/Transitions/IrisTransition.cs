@@ -1,3 +1,4 @@
+using System.Collections;
 using DG.Tweening;
 using UnityEngine;
 using UnityEngine.UI;
@@ -70,16 +71,12 @@ public class IrisTransition : MonoBehaviour
 
     private void OnEnable()
     {
-        GameEvents.OnRoundEnded   += HandleRoundEnded;
-        GameEvents.OnRoundStarted += HandleRoundStarted;
-        GameEvents.OnGameOver     += HandleGameOver;
+        GameEvents.OnGameOver += HandleGameOver;
     }
 
     private void OnDisable()
     {
-        GameEvents.OnRoundEnded   -= HandleRoundEnded;
-        GameEvents.OnRoundStarted -= HandleRoundStarted;
-        GameEvents.OnGameOver     -= HandleGameOver;
+        GameEvents.OnGameOver -= HandleGameOver;
     }
 
     private void BuildCanvas()
@@ -150,18 +147,6 @@ public class IrisTransition : MonoBehaviour
 
     // ── Event handlers ────────────────────────────────────────────────────────
 
-    private void HandleRoundEnded(int winnerIndex)
-    {
-        Vector2 center = ResolveWinnerCenter(winnerIndex);
-        CloseAndOpen(center);
-    }
-
-    private void HandleRoundStarted(int round)
-    {
-        // Safety: ensure iris is open at round start in case a wipe was interrupted
-        OpenIris(openDuration);
-    }
-
     private void HandleGameOver(int winnerIndex)
     {
         Vector2 center = ResolveWinnerCenter(winnerIndex);
@@ -222,5 +207,38 @@ public class IrisTransition : MonoBehaviour
         DOVirtual.Float(_mat.GetFloat(RadiusId), fullRadius, duration, SetRadius)
             .SetEase(Ease.OutQuad)
             .SetUpdate(true);
+    }
+
+    // ── Coroutine API (used by RoundManager to gate round handoff) ───────────
+
+    public IEnumerator CoCloseAndHold(int winnerIndex)
+    {
+        if (_mat == null) yield break;
+
+        Vector2 center = ResolveWinnerCenter(winnerIndex);
+        UpdateAspect();
+        SetCenter(center);
+
+        _mat.DOKill();
+        var seq = DOTween.Sequence().SetUpdate(true);
+        seq.AppendInterval(closeDelay)
+           .Append(DOVirtual.Float(_mat.GetFloat(RadiusId), closedRadius, closeDuration, SetRadius)
+                .SetEase(Ease.InQuad))
+           .AppendInterval(holdAtClosed);
+
+        yield return seq.WaitForCompletion();
+    }
+
+    public IEnumerator CoOpen()
+    {
+        if (_mat == null) yield break;
+
+        UpdateAspect();
+        _mat.DOKill();
+        var tw = DOVirtual.Float(_mat.GetFloat(RadiusId), fullRadius, openDuration, SetRadius)
+            .SetEase(Ease.OutQuad)
+            .SetUpdate(true);
+
+        yield return tw.WaitForCompletion();
     }
 }
