@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using VContainer;
 
 /// <summary>
 /// Multi-trigger time-feel manager. Slow-mo + true hit-stop variants.
@@ -29,7 +30,14 @@ public class HitEffectManager : MonoBehaviour
     [SerializeField] private float winFlourishDuration = 1.6f;
     [SerializeField] private float roundEndFreeze      = 0.18f;
 
-    private Coroutine _activeRoutine;
+    private Coroutine       _activeRoutine;
+    private SettingsManager _settings;
+
+    [Inject]
+    public void Construct(SettingsManager settings)
+    {
+        _settings = settings;
+    }
 
     private void OnEnable()
     {
@@ -75,7 +83,7 @@ public class HitEffectManager : MonoBehaviour
 
     public void TriggerSlowMo(SlowMoIntensity intensity)
     {
-        if (SettingsManager.Instance != null && !SettingsManager.Instance.SlowMoEnabled) return;
+        if (_settings != null && !_settings.SlowMoEnabled) return;
         if (_activeRoutine != null) StopCoroutine(_activeRoutine);
 
         float scale = mediumTimeScale, dur = mediumDuration;
@@ -90,7 +98,7 @@ public class HitEffectManager : MonoBehaviour
 
     public void TriggerHitStop(float duration)
     {
-        if (SettingsManager.Instance != null && !SettingsManager.Instance.SlowMoEnabled) return;
+        if (_settings != null && !_settings.SlowMoEnabled) return;
         if (_activeRoutine != null) StopCoroutine(_activeRoutine);
         _activeRoutine = StartCoroutine(HitStopRoutine(duration));
     }
@@ -100,7 +108,7 @@ public class HitEffectManager : MonoBehaviour
         Time.timeScale      = targetScale;
         Time.fixedDeltaTime = 0.02f * Time.timeScale;
 
-        yield return new WaitForSecondsRealtime(holdDuration);
+        yield return YieldCollection.WaitForSecondsRealtime(holdDuration);
 
         while (Time.timeScale < 1f)
         {
@@ -122,7 +130,7 @@ public class HitEffectManager : MonoBehaviour
         Time.timeScale      = 0.001f;
         Time.fixedDeltaTime = 0.02f * Time.timeScale;
 
-        yield return new WaitForSecondsRealtime(duration);
+        yield return YieldCollection.WaitForSecondsRealtime(duration);
 
         Time.timeScale      = 1f;
         Time.fixedDeltaTime = 0.02f;

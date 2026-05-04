@@ -130,16 +130,25 @@ public class PlayerController : MonoBehaviour
         _wasThrowPressedLastFrame = pressed;
     }
 
+    private PowerUpController        _powerUps;
+    private StatusEffectController   _status;
+
+    public PowerUpController       PowerUps => _powerUps;
+    public StatusEffectController  Status   => _status;
+
     private void EnsureRuntimeComponents()
     {
-        if (GetComponent<StatusEffectController>() == null)
-            gameObject.AddComponent<StatusEffectController>();
+        _status = GetComponent<StatusEffectController>();
+        if (_status == null) _status = gameObject.AddComponent<StatusEffectController>();
+
         if (GetComponent<HitFlash>() == null && visual != null)
             gameObject.AddComponent<HitFlash>();
         if (GetComponent<PlayerJuice>() == null && visual != null)
             gameObject.AddComponent<PlayerJuice>();
-        if (GetComponent<PowerUpController>() == null)
-            gameObject.AddComponent<PowerUpController>();
+
+        _powerUps = GetComponent<PowerUpController>();
+        if (_powerUps == null) _powerUps = gameObject.AddComponent<PowerUpController>();
+
         if (GetComponent<PlayerSmokeEffect>() == null)
             gameObject.AddComponent<PlayerSmokeEffect>();
         if (GetComponent<DashTrail>() == null)
@@ -149,10 +158,6 @@ public class PlayerController : MonoBehaviour
         if (GetComponent<AimIndicator>() == null)
             gameObject.AddComponent<AimIndicator>();
     }
-
-    public PowerUpController PowerUps => GetComponent<PowerUpController>();
-
-    public StatusEffectController Status => GetComponent<StatusEffectController>();
 
     private void ApplyStatsFromSO()
     {
@@ -255,7 +260,10 @@ public class PlayerController : MonoBehaviour
         Boomerang boomScript = boomObj.GetComponent<Boomerang>();
 
         boomScript.Launch(this.transform, _lastMoveDirection, force);
-        boomScript.SetTrailColor(GetComponentInChildren<Renderer>()?.material.color ?? Color.white);
+        Color trailColor = (visual != null && visual.sharedMaterial != null)
+            ? visual.sharedMaterial.color
+            : Color.white;
+        boomScript.SetTrailColor(trailColor);
         boomScript.SetThrowerIndex(_playerIndex);
         if (charge01 > 0f) boomScript.SetMaxDistance(distance);
         ActiveBoomerang = boomScript;

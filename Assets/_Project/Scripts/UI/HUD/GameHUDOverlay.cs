@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using DG.Tweening;
 using UnityEngine;
 using UnityEngine.UI;
+using VContainer;
 
 /// <summary>
 /// Runtime in-game HUD overlay. Programmatic Canvas + uGUI. Score popups,
@@ -18,6 +19,12 @@ public class GameHUDOverlay : MonoBehaviour
     private readonly Dictionary<int, RectTransform> _powerUpRows = new();
     private readonly Dictionary<int, RectTransform> _offScreenArrows = new();
     private GameManager _gameManager;
+
+    [Inject]
+    public void Construct(GameManager gameManager)
+    {
+        _gameManager = gameManager;
+    }
 
     private void Awake()
     {
@@ -42,6 +49,8 @@ public class GameHUDOverlay : MonoBehaviour
     private void Start()
     {
         _cam = Camera.main;
+        // Fallback: if not injected (auto-spawned via HUDBootstrap), find once.
+        if (_gameManager == null) _gameManager = FindFirstObjectByType<GameManager>();
     }
 
     private void BuildCanvas()
@@ -70,7 +79,7 @@ public class GameHUDOverlay : MonoBehaviour
         _countdownLabel.alignment = TextAnchor.MiddleCenter;
         _countdownLabel.fontSize  = 160;
         _countdownLabel.color     = new Color(1f, 1f, 1f, 0f);
-        _countdownLabel.font      = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        _countdownLabel.font      = FontHelper.Default();
         _countdownLabel.text      = "";
     }
 
@@ -110,7 +119,7 @@ public class GameHUDOverlay : MonoBehaviour
         label.alignment = TextAnchor.MiddleCenter;
         label.fontSize  = 64;
         label.color     = Color.white;
-        label.font      = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        label.font      = FontHelper.Default();
         label.text      = "ELIM!";
 
         rt.localScale = Vector3.one * 0.4f;
@@ -145,7 +154,7 @@ public class GameHUDOverlay : MonoBehaviour
         txt.alignment = TextAnchor.MiddleCenter;
         txt.fontSize  = 22;
         txt.color     = Color.black;
-        txt.font      = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        txt.font      = FontHelper.Default();
         txt.text      = ((PowerUpSO.PowerUpKey)powerUpKey).ToString().Substring(0, 3);
 
         rt.localScale = Vector3.one * 0.4f;
@@ -182,9 +191,7 @@ public class GameHUDOverlay : MonoBehaviour
     private void LateUpdate()
     {
         if (_cam == null) _cam = Camera.main;
-        if (_cam == null || _rootRect == null) return;
-        if (_gameManager == null) _gameManager = FindFirstObjectByType<GameManager>();
-        if (_gameManager == null) return;
+        if (_cam == null || _rootRect == null || _gameManager == null) return;
 
         var players = _gameManager.GetAllPlayers();
         for (int i = 0; i < players.Count; i++)
@@ -251,14 +258,16 @@ public class GameHUDOverlay : MonoBehaviour
         rt.anchorMin = rt.anchorMax = new Vector2(0f, 0f);
         rt.pivot = new Vector2(0.5f, 0.5f);
 
-        Color tint = (p.visual != null) ? p.visual.material.color : Color.white;
+        Color tint = (p.visual != null && p.visual.sharedMaterial != null)
+            ? p.visual.sharedMaterial.color
+            : Color.white;
 
         var txt = go.AddComponent<Text>();
         txt.alignment = TextAnchor.MiddleCenter;
         txt.fontSize  = 72;
         txt.fontStyle = FontStyle.Bold;
         txt.color     = tint;
-        txt.font      = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        txt.font      = FontHelper.Default();
         txt.text      = "▲";
         txt.horizontalOverflow = HorizontalWrapMode.Overflow;
         txt.verticalOverflow   = VerticalWrapMode.Overflow;

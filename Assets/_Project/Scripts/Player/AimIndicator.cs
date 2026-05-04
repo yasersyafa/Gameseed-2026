@@ -32,8 +32,7 @@ public class AimIndicator : MonoBehaviour
         _line.endWidth      = widthMin;
         _line.numCapVertices = 4;
 
-        var shader = Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Unlit/Color");
-        _line.material = new Material(shader);
+        _line.material = new Material(ShaderHelper.GetUnlit());
         _line.startColor = colorMin;
         _line.endColor   = new Color(colorMin.r, colorMin.g, colorMin.b, 0f);
 

@@ -238,7 +238,7 @@ public class AudioManager : MonoBehaviour
         float origVol = _musicVolume;
         float duckVol = origVol * duckTo;
         _musicSource.volume = duckVol;
-        yield return new WaitForSecondsRealtime(duration);
+        yield return YieldCollection.WaitForSecondsRealtime(duration);
         // smooth restore
         float t = 0f;
         const float restore = 0.4f;

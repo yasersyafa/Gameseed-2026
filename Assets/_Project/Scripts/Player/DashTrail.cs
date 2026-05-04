@@ -27,8 +27,7 @@ public class DashTrail : MonoBehaviour
         _trail.endWidth   = endWidth;
         _trail.emitting   = false;
 
-        var shader = Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Unlit/Color");
-        _trail.material = new Material(shader);
+        _trail.material = new Material(ShaderHelper.GetUnlit());
     }
 
     private void Start()
@@ -36,10 +35,10 @@ public class DashTrail : MonoBehaviour
         var rend = _player != null ? _player.visual : null;
         if (rend != null && _trail != null)
         {
-            Color c = rend.material.color;
+            Color c = rend.sharedMaterial != null ? rend.sharedMaterial.color : Color.white;
             _trail.startColor = new Color(c.r, c.g, c.b, 0.9f);
             _trail.endColor   = new Color(c.r, c.g, c.b, 0f);
-            _trail.material.color = c;
+            if (_trail.sharedMaterial != null) _trail.sharedMaterial.color = c;
         }
     }
 

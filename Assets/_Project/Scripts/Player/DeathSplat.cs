@@ -39,31 +39,45 @@ public class DeathSplat : MonoBehaviour
         DissolveVisual();
     }
 
+    private static Material              _sharedChunkMat;
+    private static MaterialPropertyBlock _mpb;
+    private static readonly int          BaseColorId = Shader.PropertyToID("_BaseColor");
+    private static readonly int          ColorId     = Shader.PropertyToID("_Color");
+
     private void SpawnChunks()
     {
-        Color color = _player.visual != null ? _player.visual.material.color : Color.white;
-        var shader = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard");
-        var mat = new Material(shader);
-        mat.color = color;
+        Color color = (_player.visual != null && _player.visual.sharedMaterial != null)
+            ? _player.visual.sharedMaterial.color
+            : Color.white;
+
+        if (_sharedChunkMat == null) _sharedChunkMat = new Material(ShaderHelper.GetLit());
+        if (_mpb == null)            _mpb = new MaterialPropertyBlock();
 
         for (int i = 0; i < chunkCount; i++)
         {
-            var go = GameObject.CreatePrimitive(Random.value > 0.5f
-                ? PrimitiveType.Cube
-                : PrimitiveType.Sphere);
-            Destroy(go.GetComponent<Collider>());
+            var go = Random.value > 0.5f
+                ? PrimitivePool.AcquireCube()
+                : PrimitivePool.AcquireSphere();
+
             go.transform.position   = transform.position + Vector3.up * 0.5f;
             go.transform.localScale = Vector3.one * chunkScale * Random.Range(0.7f, 1.3f);
-            go.GetComponent<Renderer>().sharedMaterial = mat;
 
-            var rb = go.AddComponent<Rigidbody>();
+            var rend = go.GetComponent<Renderer>();
+            rend.sharedMaterial = _sharedChunkMat;
+            _mpb.Clear();
+            _mpb.SetColor(BaseColorId, color);
+            _mpb.SetColor(ColorId,     color);
+            rend.SetPropertyBlock(_mpb);
+
+            if (!go.TryGetComponent<Rigidbody>(out var rb))
+                rb = go.AddComponent<Rigidbody>();
             rb.useGravity = true;
             Vector3 dir = Random.insideUnitSphere;
             dir.y = Mathf.Abs(dir.y) + 0.4f;
-            rb.linearVelocity = dir.normalized * burstForce * Random.Range(0.6f, 1.2f);
+            rb.linearVelocity  = dir.normalized * burstForce * Random.Range(0.6f, 1.2f);
             rb.angularVelocity = Random.insideUnitSphere * 12f;
 
-            Destroy(go, chunkLifetime);
+            PrimitivePool.ReleaseAfter(go, chunkLifetime);
         }
     }
 

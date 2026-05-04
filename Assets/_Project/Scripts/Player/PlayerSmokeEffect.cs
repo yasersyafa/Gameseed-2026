@@ -2,6 +2,7 @@ using UnityEngine;
 
 /// <summary>
 /// Spawn smoke particle burst on dash. Subscribes OnPlayerDashed.
+/// Uses PrimitivePool — no per-dash GameObject.CreatePrimitive.
 /// Auto-attached by PlayerController.EnsureRuntimeComponents.
 /// </summary>
 public class PlayerSmokeEffect : MonoBehaviour
@@ -41,15 +42,15 @@ public class PlayerSmokeEffect : MonoBehaviour
     {
         if (_sharedMat == null)
         {
-            var shader = Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Unlit/Color");
-            _sharedMat = new Material(shader);
-            _sharedMat.color = smokeColor;
+            _sharedMat = new Material(ShaderHelper.GetUnlit())
+            {
+                color = smokeColor,
+            };
         }
 
         for (int i = 0; i < particleCount; i++)
         {
-            var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            Destroy(go.GetComponent<Collider>());
+            var go = PrimitivePool.AcquireSphere();
 
             Vector3 dir = Random.insideUnitSphere;
             dir.y = Mathf.Abs(dir.y) * 0.3f;
@@ -59,30 +60,13 @@ public class PlayerSmokeEffect : MonoBehaviour
             var rend = go.GetComponent<Renderer>();
             rend.sharedMaterial = _sharedMat;
 
-            var rb = go.AddComponent<Rigidbody>();
+            if (!go.TryGetComponent<Rigidbody>(out var rb))
+                rb = go.AddComponent<Rigidbody>();
             rb.useGravity = false;
-            rb.linearVelocity = dir * Random.Range(1.5f, 3f);
-            rb.angularVelocity = Random.insideUnitSphere * 4f;
+            rb.linearVelocity   = dir * Random.Range(1.5f, 3f);
+            rb.angularVelocity  = Random.insideUnitSphere * 4f;
 
-            var fade = go.AddComponent<SmokeParticleFade>();
-            fade.lifetime = lifetime;
+            PrimitivePool.ReleaseAfter(go, lifetime);
         }
-    }
-}
-
-internal class SmokeParticleFade : MonoBehaviour
-{
-    public float lifetime = 0.5f;
-    private float _age;
-    private Vector3 _baseScale;
-
-    private void Awake() { _baseScale = transform.localScale; }
-
-    private void Update()
-    {
-        _age += Time.deltaTime;
-        float t = Mathf.Clamp01(_age / lifetime);
-        transform.localScale = _baseScale * (1f + t * 1.5f);
-        if (t >= 1f) Destroy(gameObject);
     }
 }

@@ -92,8 +92,7 @@ public class Boomerang : MonoBehaviour
             trail.time       = 0.3f;
             trail.startWidth = 0.45f;
             trail.endWidth   = 0f;
-            var shader = Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Unlit/Color");
-            trail.material = new Material(shader);
+            trail.material = new Material(ShaderHelper.GetUnlit());
         }
     }
 
@@ -229,16 +228,24 @@ public class Boomerang : MonoBehaviour
         _rb.MovePosition(_rb.position + _velocity * Time.fixedDeltaTime);
     }
 
+    private Gradient            _trailGradient;
+    private GradientColorKey[]  _trailColorKeys;
+    private GradientAlphaKey[]  _trailAlphaKeys;
+
     public void SetTrailColor(Color color)
     {
         if (trail == null) return;
 
-        var gradient = new Gradient();
-        gradient.SetKeys(
-            new GradientColorKey[]  { new(color, 0f), new(color, 1f) },
-            new GradientAlphaKey[]  { new(1f, 0f),    new(0f, 1f)   }
-        );
-        trail.colorGradient = gradient;
+        if (_trailGradient == null)
+        {
+            _trailGradient  = new Gradient();
+            _trailColorKeys = new GradientColorKey[2];
+            _trailAlphaKeys = new GradientAlphaKey[] { new(1f, 0f), new(0f, 1f) };
+        }
+        _trailColorKeys[0] = new GradientColorKey(color, 0f);
+        _trailColorKeys[1] = new GradientColorKey(color, 1f);
+        _trailGradient.SetKeys(_trailColorKeys, _trailAlphaKeys);
+        trail.colorGradient = _trailGradient;
     }
 
     private void SpinSelf()

@@ -1,5 +1,6 @@
 using Unity.Cinemachine;
 using UnityEngine;
+using VContainer;
 
 public class CinemachineCameraManager : MonoBehaviour
 {
@@ -15,6 +16,14 @@ public class CinemachineCameraManager : MonoBehaviour
     [SerializeField] private float smallShake  = 0.5f;
     [SerializeField] private float mediumShake = 1.5f;
     [SerializeField] private float largeShake  = 3.0f;
+
+    private SettingsManager _settings;
+
+    [Inject]
+    public void Construct(SettingsManager settings)
+    {
+        _settings = settings;
+    }
 
     private void OnEnable()
     {
@@ -61,7 +70,7 @@ public class CinemachineCameraManager : MonoBehaviour
     public void Shake(ShakeIntensity intensity)
     {
         if (impulseSource == null) return;
-        if (SettingsManager.Instance != null && !SettingsManager.Instance.ShakeEnabled) return;
+        if (_settings != null && !_settings.ShakeEnabled) return;
         float force = intensity switch
         {
             ShakeIntensity.Small  => smallShake,

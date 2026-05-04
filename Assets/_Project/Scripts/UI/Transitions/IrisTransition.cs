@@ -1,6 +1,7 @@
 using DG.Tweening;
 using UnityEngine;
 using UnityEngine.UI;
+using VContainer;
 
 /// <summary>
 /// Fullscreen iris wipe — circle hole shrinks to winner position on round end,
@@ -30,12 +31,23 @@ public class IrisTransition : MonoBehaviour
     private static readonly int CenterId = Shader.PropertyToID("_Center");
     private static readonly int AspectId = Shader.PropertyToID("_Aspect");
 
+    [Inject]
+    public void Construct(GameManager gameManager)
+    {
+        _gm = gameManager;
+    }
+
     private void Awake()
     {
         TryLoadConfig();
         BuildCanvas();
         BuildOverlay();
         SetRadius(fullRadius);
+    }
+
+    private void Start()
+    {
+        if (_gm == null) _gm = FindFirstObjectByType<GameManager>();
     }
 
     private void TryLoadConfig()
@@ -159,7 +171,6 @@ public class IrisTransition : MonoBehaviour
 
     private Vector2 ResolveWinnerCenter(int winnerIndex)
     {
-        if (_gm == null) _gm = FindFirstObjectByType<GameManager>();
         if (_gm == null || winnerIndex < 0) return new Vector2(0.5f, 0.5f);
 
         var players = _gm.GetAllPlayers();

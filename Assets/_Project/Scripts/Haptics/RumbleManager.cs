@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using VContainer;
 
 /// <summary>
 /// Gamepad rumble dispatcher. Subscribe ke combat events, route motor speeds
@@ -17,8 +18,17 @@ public class RumbleManager : MonoBehaviour
     [SerializeField] private Vector3 throwProfile   = new(0.15f, 0.25f, 0.06f);
 
     private readonly Dictionary<int, Coroutine> _activeRoutines = new();
+    private readonly Dictionary<int, Gamepad>   _padCache       = new();
 
-    private GameManager _gm;
+    private GameManager     _gm;
+    private SettingsManager _settings;
+
+    [Inject]
+    public void Construct(GameManager gameManager, SettingsManager settings)
+    {
+        _gm       = gameManager;
+        _settings = settings;
+    }
 
     private void OnEnable()
     {
@@ -51,7 +61,7 @@ public class RumbleManager : MonoBehaviour
 
     public void Rumble(int playerIndex, float low, float high, float duration)
     {
-        if (SettingsManager.Instance != null && !SettingsManager.Instance.RumbleEnabled) return;
+        if (_settings != null && !_settings.RumbleEnabled) return;
 
         var pad = GetGamepadForPlayer(playerIndex);
         if (pad == null) return;
@@ -65,26 +75,29 @@ public class RumbleManager : MonoBehaviour
     private IEnumerator RumbleRoutine(int idx, Gamepad pad, float low, float high, float duration)
     {
         pad.SetMotorSpeeds(low, high);
-        yield return new WaitForSecondsRealtime(duration);
+        yield return YieldCollection.WaitForSecondsRealtime(duration);
         pad.SetMotorSpeeds(0f, 0f);
         _activeRoutines.Remove(idx);
     }
 
     private Gamepad GetGamepadForPlayer(int playerIndex)
     {
-        if (_gm == null) _gm = FindFirstObjectByType<GameManager>();
+        if (_padCache.TryGetValue(playerIndex, out var cached)) return cached;
+
         if (_gm == null) return null;
 
         var players = _gm.GetAllPlayers();
         if (playerIndex < 0 || playerIndex >= players.Count) return null;
 
-        var pi = players[playerIndex].GetComponent<PlayerInput>();
-        if (pi == null) return null;
+        if (!players[playerIndex].TryGetComponent<PlayerInput>(out var pi)) return null;
 
+        Gamepad found = null;
         foreach (var device in pi.devices)
-            if (device is Gamepad g) return g;
+            if (device is Gamepad g) { found = g; break; }
 
-        return null;
+        // Cache miss-too (null) — avoid re-scanning every rumble for keyboard players
+        _padCache[playerIndex] = found;
+        return found;
     }
 
     private void StopAllRumble()
