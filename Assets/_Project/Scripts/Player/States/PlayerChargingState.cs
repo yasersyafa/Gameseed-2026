@@ -46,10 +46,7 @@ public class PlayerChargingState : IPlayerState
             player.visual.transform.localScale = Vector3.one;
     }
 
-    public void HandleMove(PlayerController player, Vector2 input)
-    {
-        player.MoveInput = input;
-    }
+    public void HandleMove(PlayerController player, Vector2 input) { }
 
     public void HandleDash(PlayerController player)
     {

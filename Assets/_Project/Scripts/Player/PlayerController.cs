@@ -187,7 +187,12 @@ public class PlayerController : MonoBehaviour
     #region Player Input Methods
     public void OnMove(InputValue value)
     {
-        _currentState?.HandleMove(this, value.Get<Vector2>());
+        // Store input always — states that block movement still need the latest
+        // value so stale input doesn't bleed into the next state (e.g. attack
+        // swing freezes _moveInput, causing slide on return to Idle).
+        var input = value.Get<Vector2>();
+        _moveInput = input;
+        _currentState?.HandleMove(this, input);
     }
 
     public void OnDash(InputValue value)
