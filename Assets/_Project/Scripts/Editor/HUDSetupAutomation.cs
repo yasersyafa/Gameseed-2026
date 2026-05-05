@@ -20,11 +20,16 @@ using UnityEngine.UIElements;
 public static class HUDSetupAutomation
 {
     private const string HudFolder         = "Assets/_Project/UI/HUD";
-    private const string ResourcesFolder   = HudFolder + "/Resources";
+    private const string ConfigsFolder     = "Assets/_Project/ScriptableObjects/Configs";
+    private const string FontsFolder       = "Assets/_Project/Fonts";
     private const string PanelSettingsPath = HudFolder + "/HUDPanelSettings.asset";
-    private const string HudViewUxmlPath   = ResourcesFolder + "/HUDView.uxml";
-    private const string PlayerRowUxmlPath = ResourcesFolder + "/PlayerRowTemplate.uxml";
-    private const string HudUssPath        = ResourcesFolder + "/HUDStyle.uss";
+    private const string HudViewUxmlPath   = HudFolder + "/HUDView.uxml";
+    private const string PlayerRowUxmlPath = HudFolder + "/PlayerRowTemplate.uxml";
+    private const string HudUssPath        = HudFolder + "/HUDStyle.uss";
+    private const string FontLibraryPath   = HudFolder + "/FontLibrary.asset";
+    private const string DisplayFontPath   = FontsFolder + "/ArchivoBlack-Regular.ttf";
+    private const string MonoFontPath      = FontsFolder + "/JetBrainsMono-Bold.ttf";
+    private const string IrisConfigPath    = ConfigsFolder + "/IrisConfig.asset";
     private const string HudGoName         = "[GameHUD]";
     private const string EventSystemGoName = "[EventSystem]";
 
@@ -40,12 +45,13 @@ public static class HUDSetupAutomation
         if (viewUxml == null || rowUxml == null || uss == null)
         {
             Debug.LogError(
-                $"[HUDSetup] Missing UXML/USS under {ResourcesFolder}. " +
+                $"[HUDSetup] Missing UXML/USS under {HudFolder}. " +
                 "Expected HUDView.uxml, PlayerRowTemplate.uxml, HUDStyle.uss.");
             return;
         }
 
-        var hudGo = EnsureHudGameObject(panelSettings, viewUxml, rowUxml, uss);
+        var fontLibrary = EnsureFontLibrary();
+        var hudGo = EnsureHudGameObject(panelSettings, viewUxml, rowUxml, uss, fontLibrary);
         EnsureEventSystem();
 
         EditorSceneManager.MarkSceneDirty(hudGo.scene);
@@ -70,11 +76,28 @@ public static class HUDSetupAutomation
         return ps;
     }
 
+    private static FontLibrary EnsureFontLibrary()
+    {
+        var lib = AssetDatabase.LoadAssetAtPath<FontLibrary>(FontLibraryPath);
+        if (lib == null)
+        {
+            lib = ScriptableObject.CreateInstance<FontLibrary>();
+            AssetDatabase.CreateAsset(lib, FontLibraryPath);
+        }
+        var display = AssetDatabase.LoadAssetAtPath<Font>(DisplayFontPath);
+        var mono    = AssetDatabase.LoadAssetAtPath<Font>(MonoFontPath);
+        if (display != null) lib.display = display;
+        if (mono    != null) lib.mono    = mono;
+        EditorUtility.SetDirty(lib);
+        return lib;
+    }
+
     private static GameObject EnsureHudGameObject(
         PanelSettings ps,
         VisualTreeAsset viewUxml,
         VisualTreeAsset rowUxml,
-        StyleSheet uss)
+        StyleSheet uss,
+        FontLibrary fontLibrary)
     {
         var existing = FindInActiveScene(HudGoName);
         if (existing == null)
@@ -89,17 +112,34 @@ public static class HUDSetupAutomation
 
         var view = EnsureComponent<GameHUDView>(existing);
         var so = new SerializedObject(view);
-        var rowProp = so.FindProperty("playerRowTemplate");
-        var ussProp = so.FindProperty("hudStyleSheet");
-        if (rowProp != null) rowProp.objectReferenceValue = rowUxml;
-        if (ussProp != null) ussProp.objectReferenceValue = uss;
+        var rowProp  = so.FindProperty("playerRowTemplate");
+        var ussProp  = so.FindProperty("hudStyleSheet");
+        var fontProp = so.FindProperty("fontLibrary");
+        if (rowProp  != null) rowProp.objectReferenceValue  = rowUxml;
+        if (ussProp  != null) ussProp.objectReferenceValue  = uss;
+        if (fontProp != null) fontProp.objectReferenceValue = fontLibrary;
         so.ApplyModifiedProperties();
 
         EnsureComponent<SettingsScreen>(existing);
-        EnsureComponent<IrisTransition>(existing);
+        var iris = EnsureComponent<IrisTransition>(existing);
+        WireIrisConfig(iris);
 
         EditorUtility.SetDirty(existing);
         return existing;
+    }
+
+    private static void WireIrisConfig(IrisTransition iris)
+    {
+        var cfg = AssetDatabase.LoadAssetAtPath<IrisConfigSO>(IrisConfigPath);
+        if (cfg == null)
+        {
+            Debug.LogWarning($"[HUDSetup] IrisConfig.asset not found at {IrisConfigPath}; iris keeps SerializeField defaults.");
+            return;
+        }
+        var so = new SerializedObject(iris);
+        var prop = so.FindProperty("configSO");
+        if (prop != null) prop.objectReferenceValue = cfg;
+        so.ApplyModifiedProperties();
     }
 
     private static T EnsureComponent<T>(GameObject go) where T : Component

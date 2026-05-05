@@ -10,7 +10,10 @@ using VContainer;
 /// </summary>
 public class IrisTransition : MonoBehaviour
 {
-    [Header("Timing (overridden by IrisConfigSO if present in Resources)")]
+    [Header("Config (override SerializeField fields if assigned)")]
+    [SerializeField] private IrisConfigSO configSO;
+
+    [Header("Timing")]
     [SerializeField] private float closeDuration = 0.7f;
     [SerializeField] private float openDuration  = 0.5f;
     [SerializeField] private float closeDelay    = 0.4f;
@@ -40,7 +43,7 @@ public class IrisTransition : MonoBehaviour
 
     private void Awake()
     {
-        TryLoadConfig();
+        ApplyConfigFromSO();
         BuildCanvas();
         BuildOverlay();
         SetRadius(fullRadius);
@@ -51,22 +54,17 @@ public class IrisTransition : MonoBehaviour
         if (_gm == null) _gm = FindFirstObjectByType<GameManager>();
     }
 
-    private void TryLoadConfig()
+    private void ApplyConfigFromSO()
     {
-        var cfg = Resources.Load<IrisConfigSO>("IrisConfig");
-        if (cfg == null) return;
+        if (configSO == null) return;
 
-        closeDelay          = cfg.closeDelay;
-        closeDuration       = cfg.closeDuration;
-        holdAtClosed        = cfg.holdAtClosed;
-        openDuration        = cfg.openDuration;
-        fullRadius          = cfg.fullRadius;
-        closedRadius        = cfg.closedRadius;
-        gameOverDurationMul = cfg.gameOverDurationMul;
-
-#if UNITY_EDITOR
-        Debug.Log($"[IrisTransition] Loaded IrisConfig: close={closeDuration}s open={openDuration}s hold={holdAtClosed}s delay={closeDelay}s");
-#endif
+        closeDelay          = configSO.closeDelay;
+        closeDuration       = configSO.closeDuration;
+        holdAtClosed        = configSO.holdAtClosed;
+        openDuration        = configSO.openDuration;
+        fullRadius          = configSO.fullRadius;
+        closedRadius        = configSO.closedRadius;
+        gameOverDurationMul = configSO.gameOverDurationMul;
     }
 
     private void OnEnable()

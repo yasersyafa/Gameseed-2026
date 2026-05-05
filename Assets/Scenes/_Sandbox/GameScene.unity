@@ -3145,6 +3145,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8c276ab72758b475093dfb96cad61995, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IrisTransition
+  configSO: {fileID: 11400000, guid: 5064297d67ea94292a532970df15b27b, type: 2}
   closeDuration: 0.7
   openDuration: 0.5
   closeDelay: 0.4
@@ -3178,6 +3179,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GameHUDView
   playerRowTemplate: {fileID: 9197481963319205126, guid: b9215fca2019e4922bd075b0ed1f977d, type: 3}
   hudStyleSheet: {fileID: 7433441132597879392, guid: 6d91be0fc84bb472c984e1179fad70b9, type: 3}
+  fontLibrary: {fileID: 11400000, guid: 8901c22ba7d0c4069b4a500e20319b3a, type: 2}
 --- !u!114 &1358279009
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4218,6 +4220,108 @@ MonoBehaviour:
       m_PostInfinity: 2
       m_RotationOrder: 4
   CustomBlends: {fileID: 0}
+--- !u!1 &1855521029
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1855521033}
+  - component: {fileID: 1855521032}
+  - component: {fileID: 1855521031}
+  - component: {fileID: 1855521030}
+  m_Layer: 0
+  m_Name: '[Juice]'
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1855521030
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1855521029}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7d4f7a2b1e6c4e9ad4f5061728394a5b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WinFlourish
+  confettiCount: 36
+  confettiScale: 0.18
+  burstSpeed: 11
+  lifetime: 2
+  spawnHeight: 1.4
+  palette:
+  - {r: 1, g: 0.85, b: 0.2, a: 1}
+  - {r: 1, g: 0.4, b: 0.5, a: 1}
+  - {r: 0.4, g: 0.85, b: 1, a: 1}
+  - {r: 0.6, g: 1, b: 0.5, a: 1}
+  - {r: 1, g: 1, b: 1, a: 1}
+--- !u!114 &1855521031
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1855521029}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7a1c4d9e8f3a4b67a1d2c3e4f50617a8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HitImpactVfx
+  particleCount: 10
+  particleScale: 0.18
+  burstSpeed: 9
+  lifetime: 0.45
+  spreadDegrees: 55
+  upwardBias: 0.4
+  defaultColor: {r: 1, g: 0.85, b: 0.3, a: 1}
+  parryColor: {r: 0.5, g: 0.9, b: 1, a: 1}
+--- !u!114 &1855521032
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1855521029}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7b2d5e0f9c4a4c78b2e3d4f5061728b9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PostFxJuice
+  hitVignette: 0.45
+  hitChromatic: 0.6
+  hitDuration: 0.25
+  elimVignette: 0.55
+  elimChromatic: 0.85
+  elimDuration: 0.6
+  parryVignette: 0.35
+  parryChromatic: 0.9
+  parryDuration: 0.18
+  winVignette: 0.2
+  winChromatic: 0.5
+  winDuration: 1.4
+  vignetteColor: {r: 0, g: 0, b: 0, a: 1}
+--- !u!4 &1855521033
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1855521029}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1857490998
 GameObject:
   m_ObjectHideFlags: 0
@@ -5201,3 +5305,4 @@ SceneRoots:
   - {fileID: 1893729015}
   - {fileID: 1358279010}
   - {fileID: 1495476119}
+  - {fileID: 1855521033}

@@ -2,8 +2,8 @@ using UnityEngine;
 
 /// <summary>
 /// Confetti burst di posisi winner saat OnGameOver. Pakai PrimitivePool cubes
-/// dengan random palette + winner color emphasis. Berdiri sendiri, tidak butuh
-/// scene wiring (di-spawn lewat JuiceBootstrap).
+/// dengan random palette + winner color emphasis. Hidup di `[Juice]` GameObject
+/// scene-baked (Tools > Boomerang Fu > Setup/Juice).
 /// </summary>
 public class WinFlourish : MonoBehaviour
 {

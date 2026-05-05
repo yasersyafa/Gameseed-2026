@@ -18,6 +18,7 @@ public class GameHUDView : MonoBehaviour
     [Header("Design system refs (wire via Tools > Boomerang Fu > Setup/HUD)")]
     [SerializeField] private VisualTreeAsset playerRowTemplate;
     [SerializeField] private StyleSheet      hudStyleSheet;
+    [SerializeField] private FontLibrary     fontLibrary;
 
     // Tint class names that match USS variants
     private static readonly string[] PlayerTintClasses =
@@ -76,6 +77,11 @@ public class GameHUDView : MonoBehaviour
             enabled = false;
             return;
         }
+
+        // Push assigned fonts into FontHelper before any code path queries
+        // Display() / Mono() — replaces the old Resources.Load<Font> lookup.
+        if (fontLibrary != null)
+            FontHelper.Register(fontLibrary.display, fontLibrary.mono);
 
         var docRoot = _doc.rootVisualElement;
         // Root must be Position so pause-button picks reach it. UI Toolkit

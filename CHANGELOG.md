@@ -46,6 +46,14 @@ Newest first.
   parrier and `StartReturning()`s instead. Previously a parried-into
   -eliminated player meant the boomerang chased the off-map hold
   position forever.
+- Juice listeners silently stopped firing after the first scene
+  reload. `JuiceBootstrap` ran at `RuntimeInitializeOnLoadMethod`
+  (once per app launch), spawned a DDOL `[Juice]` GO, and subscribed
+  to `GameEvents` exactly once. `RootLifetimeScope` nulls every
+  delegate via `GameEvents.ClearAll` on `sceneUnloaded`; the listener
+  GO never disabled, so its `OnEnable` never re-ran to re-subscribe.
+  Migrated to scene-baked `[Juice]` (see Added) so subscribe/unsubscribe
+  follows scene lifecycle.
 
 ### Changed
 - `RoundManager` drives `IrisTransition` via coroutines (`CoCloseAndHold`,
@@ -86,6 +94,11 @@ Newest first.
   `RegisterComponentInHierarchy`, so its `[Inject] Construct(...)`
   fires reliably. `GameHUDView` dropped its `FindFirstObjectByType`
   fallbacks — DI is now the only path.
+- Global juice listeners (`PostFxJuice`, `HitImpactVfx`,
+  `WinFlourish`) live on a scene-baked `[Juice]` GameObject built by
+  `Tools > Boomerang Fu > Setup/Juice (Scene Listeners)`. All
+  `SerializeField` knobs (vignette / chromatic intensities + durations,
+  burst counts, confetti palette) are now inspector-editable.
 
 ### Removed
 - `GameEvents.OnLivesChanged` (no consumers since the HUD lives
@@ -97,6 +110,10 @@ Newest first.
 - `HUDBootstrap.cs` (runtime UI spawn). Replaced by editor-baked
   scene authoring; `EventSystem` + `InputSystemUIInputModule`
   creation moved into `HUDSetupAutomation`.
+- `JuiceBootstrap.cs` (`RuntimeInitializeOnLoadMethod` →
+  `DontDestroyOnLoad` spawn of juice listeners). Replaced by
+  scene-baked `[Juice]` GameObject + `JuiceSetupAutomation` editor
+  generator. Closes the silent-break-after-scene-reload bug.
 - HUD layout: per-player info now in a top-left vertical stack.
   Round info (`ROUND N`) is centered top. Top-right exposes a
   debug-only pause button.
@@ -172,6 +189,10 @@ Newest first.
   wires every UXML / USS / PanelSettings reference via
   `SerializedObject`, and ensures an `[EventSystem]` GO with
   `InputSystemUIInputModule`. Bundled into `Setup All`.
+- Editor automation: `Tools > Boomerang Fu > Setup/Juice (Scene
+  Listeners)`. Idempotent — finds or creates `[Juice]` GameObject in
+  the active scene and `Undo.AddComponent`s `PostFxJuice` +
+  `HitImpactVfx` + `WinFlourish`. Bundled into `Setup All`.
 
 ## 2026-05-01
 

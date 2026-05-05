@@ -21,6 +21,7 @@ public static class BoomerangFuMenu
         SetupConfigs();
         SetupAudio();
         SetupHUD();
+        SetupJuice();
         EditorAssetUtils.Refresh();
         Debug.Log("[BoomerangFu] Setup All complete.");
     }
@@ -52,6 +53,12 @@ public static class BoomerangFuMenu
     public static void SetupHUD()
     {
         HUDSetupAutomation.RunAll();
+    }
+
+    [MenuItem(Root + "Setup/Juice (Scene Listeners)")]
+    public static void SetupJuice()
+    {
+        JuiceSetupAutomation.RunAll();
     }
 }
 #endif
