@@ -76,6 +76,16 @@ Newest first.
   `AimIndicator` now share `ShaderHelper.SharedUnlit()` via
   `sharedMaterial` instead of `new Material(ShaderHelper.GetUnlit())`
   per spawn. Per-throw VRAM leak gone; color is driven by gradients.
+- HUD authoring is scene-baked. `[GameHUD]` GameObject lives in the
+  active scene with a serialized `UIDocument` (referencing
+  `HUDView.uxml` + `HUDPanelSettings.asset`). `GameHUDView` reads
+  `playerRowTemplate` + `hudStyleSheet` `SerializeField` refs instead
+  of `Resources.Load` and no longer creates `UIDocument` or
+  `PanelSettings` at runtime.
+- DI: `RootLifetimeScope` registers `GameHUDView` via
+  `RegisterComponentInHierarchy`, so its `[Inject] Construct(...)`
+  fires reliably. `GameHUDView` dropped its `FindFirstObjectByType`
+  fallbacks — DI is now the only path.
 
 ### Removed
 - `GameEvents.OnLivesChanged` (no consumers since the HUD lives
@@ -84,6 +94,9 @@ Newest first.
 - `GameManager.EnableJoining` (dead public API).
 - `PowerUpController.ActiveEffects` allocator-getter (no callers).
 - Empty `HitImpactVfx.HandleParry` subscription stub.
+- `HUDBootstrap.cs` (runtime UI spawn). Replaced by editor-baked
+  scene authoring; `EventSystem` + `InputSystemUIInputModule`
+  creation moved into `HUDSetupAutomation`.
 - HUD layout: per-player info now in a top-left vertical stack.
   Round info (`ROUND N`) is centered top. Top-right exposes a
   debug-only pause button.
@@ -152,6 +165,13 @@ Newest first.
   `Resume` and `Exit` actions toggle `Time.timeScale` and
   `AudioListener.pause`; `Exit` stops play in editor or
   `Application.Quit` in build.
+- Editor automation: `Tools > Boomerang Fu > Setup/HUD
+  (Scene + Asset Refs)`. Idempotent — creates
+  `HUDPanelSettings.asset`, builds `[GameHUD]` GameObject with
+  `UIDocument` + `GameHUDView` + `SettingsScreen` + `IrisTransition`,
+  wires every UXML / USS / PanelSettings reference via
+  `SerializedObject`, and ensures an `[EventSystem]` GO with
+  `InputSystemUIInputModule`. Bundled into `Setup All`.
 
 ## 2026-05-01
 

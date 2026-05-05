@@ -15,11 +15,12 @@ public static class BoomerangFuMenu
     {
         if (!EditorUtility.DisplayDialog(
             "Setup All",
-            "Run all auto-setup steps? Creates SOs, audio, default configs.",
+            "Run all auto-setup steps? Creates SOs, audio, HUD scene + asset refs.",
             "Yes", "Cancel")) return;
 
         SetupConfigs();
         SetupAudio();
+        SetupHUD();
         EditorAssetUtils.Refresh();
         Debug.Log("[BoomerangFu] Setup All complete.");
     }
@@ -45,6 +46,12 @@ public static class BoomerangFuMenu
     public static void SetupAudio()
     {
         AudioSetupAutomation.RunAll();
+    }
+
+    [MenuItem(Root + "Setup/HUD (Scene + Asset Refs)")]
+    public static void SetupHUD()
+    {
+        HUDSetupAutomation.RunAll();
     }
 }
 #endif

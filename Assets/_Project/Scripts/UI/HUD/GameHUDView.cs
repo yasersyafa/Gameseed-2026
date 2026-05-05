@@ -6,17 +6,18 @@ using UnityEngine.UIElements.Experimental;
 using VContainer;
 
 /// <summary>
-/// HUD generator. Loads design system from UXML/USS under
-/// Assets/_Project/UI/HUD/Resources, queries named elements, binds GameEvents.
-/// No runtime VisualElement construction for layout — only data + dynamic
-/// instances (player rows cloned from PlayerRowTemplate.uxml, ELIM popups,
-/// off-screen arrows).
+/// Scene-baked HUD view. UIDocument component holds VisualTreeAsset +
+/// PanelSettings (wired by Tools > Boomerang Fu > Setup/HUD). This script
+/// queries named elements, applies the optional StyleSheet override, and
+/// binds GameEvents. Player rows are cloned from a SerializeField template
+/// at runtime (count not known until match start).
 /// </summary>
+[RequireComponent(typeof(UIDocument))]
 public class GameHUDView : MonoBehaviour
 {
-    private const string UxmlPath          = "HUDView";
-    private const string UssPath           = "HUDStyle";
-    private const string PlayerRowUxmlPath = "PlayerRowTemplate";
+    [Header("Design system refs (wire via Tools > Boomerang Fu > Setup/HUD)")]
+    [SerializeField] private VisualTreeAsset playerRowTemplate;
+    [SerializeField] private StyleSheet      hudStyleSheet;
 
     // Tint class names that match USS variants
     private static readonly string[] PlayerTintClasses =
@@ -24,7 +25,6 @@ public class GameHUDView : MonoBehaviour
 
     private UIDocument        _doc;
     private VisualElement     _root;
-    private VisualTreeAsset   _playerRowTemplate;
 
     // Persistent named elements from UXML
     private VisualElement _topLeft;
@@ -69,8 +69,22 @@ public class GameHUDView : MonoBehaviour
     // ── Lifecycle ────────────────────────────────────────────────────────────
     private void Awake()
     {
-        BuildDocument();
-        LoadAndCloneTree();
+        _doc = GetComponent<UIDocument>();
+        if (_doc == null || _doc.rootVisualElement == null)
+        {
+            Debug.LogError("[GameHUDView] UIDocument missing or unconfigured. Run Tools > Boomerang Fu > Setup/HUD.");
+            enabled = false;
+            return;
+        }
+
+        var docRoot = _doc.rootVisualElement;
+        // Root must be Position so pause-button picks reach it. UI Toolkit
+        // PerformPick early-outs on Ignore — entire subtree becomes unpickable.
+        docRoot.pickingMode = PickingMode.Position;
+        if (hudStyleSheet != null && !docRoot.styleSheets.Contains(hudStyleSheet))
+            docRoot.styleSheets.Add(hudStyleSheet);
+
+        _root = docRoot.Q<VisualElement>("hud-root") ?? docRoot;
         QueryElements();
         ApplyFonts();
         WirePauseButtons();
@@ -79,9 +93,6 @@ public class GameHUDView : MonoBehaviour
     private void Start()
     {
         _cam = Camera.main;
-        if (_gameManager == null) _gameManager = FindFirstObjectByType<GameManager>();
-        if (_round       == null) _round       = FindFirstObjectByType<RoundManager>();
-        if (_lives       == null) _lives       = FindFirstObjectByType<LivesSystem>();
     }
 
     private void OnEnable()
@@ -103,42 +114,6 @@ public class GameHUDView : MonoBehaviour
     }
 
     // ── Document setup ───────────────────────────────────────────────────────
-    private void BuildDocument()
-    {
-        var ps = ScriptableObject.CreateInstance<PanelSettings>();
-        ps.scaleMode           = PanelScaleMode.ScaleWithScreenSize;
-        ps.referenceResolution = new Vector2Int(1920, 1080);
-        ps.match               = 0.5f;
-        ps.sortingOrder        = 100;
-
-        _doc               = gameObject.AddComponent<UIDocument>();
-        _doc.panelSettings = ps;
-    }
-
-    private void LoadAndCloneTree()
-    {
-        var view = Resources.Load<VisualTreeAsset>(UxmlPath);
-        var uss  = Resources.Load<StyleSheet>(UssPath);
-        _playerRowTemplate = Resources.Load<VisualTreeAsset>(PlayerRowUxmlPath);
-
-        if (view == null)
-        {
-            Debug.LogError($"[GameHUDView] Missing UXML at Resources/{UxmlPath}");
-            return;
-        }
-
-        var docRoot = _doc.rootVisualElement;
-        docRoot.style.flexGrow = 1;
-        // Root must be Position so pause button click reaches it. UI Toolkit
-        // PerformPick early-outs on Ignore — entire subtree becomes unpickable.
-        docRoot.pickingMode = PickingMode.Position;
-
-        view.CloneTree(docRoot);
-        if (uss != null) docRoot.styleSheets.Add(uss);
-
-        _root = docRoot.Q<VisualElement>("hud-root") ?? docRoot;
-    }
-
     private void QueryElements()
     {
         _topLeft          = _root.Q<VisualElement>("top-left");
@@ -224,13 +199,13 @@ public class GameHUDView : MonoBehaviour
         if (_playerRows.TryGetValue(playerIndex, out var existing) && existing != null)
             return existing;
 
-        if (_playerRowTemplate == null || _topLeft == null)
+        if (playerRowTemplate == null || _topLeft == null)
         {
-            Debug.LogWarning("[GameHUDView] Missing PlayerRowTemplate or top-left zone");
+            Debug.LogWarning("[GameHUDView] Missing playerRowTemplate or top-left zone");
             return null;
         }
 
-        var instance = _playerRowTemplate.Instantiate();
+        var instance = playerRowTemplate.Instantiate();
         var row = instance.Q<VisualElement>("player-row") ?? instance;
         _topLeft.Add(row);
 
