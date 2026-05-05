@@ -1,0 +1,315 @@
+/* ── HUD design system ────────────────────────────────────────────────────
+ * Neo-brutalism with soft pastel palette. Each card composes:
+ *   .brutal-card   — relative wrapper, sets size + rotation
+ *     .brutal-shadow  — absolute, ink-filled, offset 6/6
+ *     .brutal-content — absolute, ink-bordered, tinted via .cream / .peach / etc
+ *
+ * Palette (kept in one place — change here, not in code):
+ *   ink:         #1F1A2E
+ *   cream:       #FAF0DB
+ *   peach:       #FFBDA8
+ *   mint:        #BCEDD7
+ *   sky:         #B7DBF5
+ *   lemon:       #FFEB9E
+ *   lavender:    #D6C7F5
+ *   dustypink:   #F5C7DB
+ * ─────────────────────────────────────────────────────────────────────── */
+
+.hud-root {
+    flex-grow: 1;
+}
+
+/* ── Zones ───────────────────────────────────────────────────────────── */
+.zone {
+    position: absolute;
+}
+
+.zone-top-left {
+    top: 24px;
+    left: 24px;
+    flex-direction: column;
+}
+
+.zone-top-center {
+    top: 24px;
+    left: 50%;
+    translate: -50% 0;
+    flex-direction: row;
+}
+
+.zone-top-right {
+    top: 24px;
+    right: 24px;
+    flex-direction: row;
+    align-items: center;
+}
+
+.zone-countdown {
+    top: 38%;
+    left: 50%;
+    translate: -50% 0;
+    opacity: 0;
+}
+
+.zone-world {
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+/* ── Brutal card composition ─────────────────────────────────────────── */
+.brutal-card {
+    position: relative;
+}
+
+.brutal-shadow {
+    position: absolute;
+    left: 6px;
+    top: 6px;
+    width: 100%;
+    height: 100%;
+    background-color: #1F1A2E;
+    border-top-width: 4px;
+    border-right-width: 4px;
+    border-bottom-width: 4px;
+    border-left-width: 4px;
+    border-color: #1F1A2E;
+}
+
+.brutal-content {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    border-top-width: 4px;
+    border-right-width: 4px;
+    border-bottom-width: 4px;
+    border-left-width: 4px;
+    border-color: #1F1A2E;
+    background-color: #FAF0DB;
+}
+
+.brutal-content.cream     { background-color: #FAF0DB; }
+.brutal-content.peach     { background-color: #FFBDA8; }
+.brutal-content.sky       { background-color: #B7DBF5; }
+.brutal-content.mint      { background-color: #BCEDD7; }
+.brutal-content.lemon     { background-color: #FFEB9E; }
+.brutal-content.lavender  { background-color: #D6C7F5; }
+.brutal-content.dustypink { background-color: #F5C7DB; }
+
+/* ── Card variants: dimensions + rotation ────────────────────────────── */
+.card-round {
+    width: 260px;
+    height: 90px;
+    rotate: -2deg;
+}
+
+.card-countdown {
+    width: 600px;
+    height: 320px;
+    rotate: -3deg;
+}
+
+.card-info {
+    width: 280px;
+    height: 80px;
+    rotate: -2deg;
+}
+
+.card-info.even {
+    rotate: -2deg;
+}
+
+.card-info.odd {
+    rotate: 2deg;
+}
+
+.card-powerup {
+    width: 260px;
+    height: 60px;
+    margin-left: 10px;
+    rotate: 1.5deg;
+}
+
+.card-powerup.odd {
+    rotate: -1.5deg;
+}
+
+.card-gameover {
+    position: absolute;
+    left: 50%;
+    top: 40%;
+    translate: -50% 0;
+    width: 720px;
+    height: 280px;
+    rotate: -1.5deg;
+    display: none;
+}
+
+.card-pause {
+    width: 520px;
+    height: 360px;
+    rotate: -1deg;
+}
+
+/* ── Brutal button (clickable) ───────────────────────────────────────── */
+.brutal-button {
+    background-color: #FFEB9E;
+    color: #1F1A2E;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    border-top-width: 4px;
+    border-right-width: 4px;
+    border-bottom-width: 4px;
+    border-left-width: 4px;
+    border-color: #1F1A2E;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    margin: 0;
+    padding: 0;
+    rotate: 3deg;
+    width: 70px;
+    height: 70px;
+    font-size: 28px;
+}
+
+.brutal-button.mint      { background-color: #BCEDD7; }
+.brutal-button.dustypink { background-color: #F5C7DB; }
+.brutal-button.peach     { background-color: #FFBDA8; }
+.brutal-button.sky       { background-color: #B7DBF5; }
+.brutal-button.lavender  { background-color: #D6C7F5; }
+
+.brutal-button:hover {
+    translate: 0 -2px;
+}
+
+.brutal-button:active {
+    translate: 2px 2px;
+}
+
+/* Pause-modal action buttons are wider */
+.pause-action {
+    width: 280px;
+    height: 70px;
+    font-size: 28px;
+    margin-top: 7px;
+    margin-bottom: 7px;
+    rotate: -1deg;
+}
+
+.pause-action.dustypink {
+    rotate: 1deg;
+}
+
+/* ── Player row ──────────────────────────────────────────────────────── */
+.player-row {
+    flex-direction: row;
+    align-items: center;
+    margin-bottom: 14px;
+}
+
+.info-content {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding-left: 16px;
+    padding-right: 16px;
+}
+
+.powerup-content {
+    flex-direction: row;
+    justify-content: flex-start;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.point-dots {
+    flex-direction: row;
+    align-items: center;
+}
+
+.point-dot {
+    width: 22px;
+    height: 22px;
+    margin-left: 6px;
+    background-color: #1F1A2E;
+    border-top-width: 3px;
+    border-right-width: 3px;
+    border-bottom-width: 3px;
+    border-left-width: 3px;
+    border-color: #1F1A2E;
+}
+
+.powerup-row {
+    flex-direction: row;
+    align-items: center;
+    flex-grow: 1;
+}
+
+.powerup-icon {
+    width: 44px;
+    height: 44px;
+    margin-right: 8px;
+    border-top-width: 3px;
+    border-right-width: 3px;
+    border-bottom-width: 3px;
+    border-left-width: 3px;
+    border-color: #1F1A2E;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ── Typography ──────────────────────────────────────────────────────── */
+.display-bold {
+    color: #1F1A2E;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    white-space: nowrap;
+}
+
+.round-text       { font-size: 32px; }
+.countdown-text   { font-size: 220px; }
+.tag-text         { font-size: 36px; }
+.gameover-text    { font-size: 92px; }
+.pause-title-text { font-size: 36px; margin-bottom: 24px; }
+.elim-text        { font-size: 48px; }
+
+/* ── Pause modal ─────────────────────────────────────────────────────── */
+.pause-modal {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.55);
+    align-items: center;
+    justify-content: center;
+    display: none;
+}
+
+.pause-content {
+    flex-direction: column;
+    padding-top: 24px;
+    padding-bottom: 24px;
+}
+
+/* ── ELIM popup (world-space float) ──────────────────────────────────── */
+.elim-popup {
+    position: absolute;
+    width: 200px;
+    height: 80px;
+}
+
+/* ── Off-screen direction arrow ──────────────────────────────────────── */
+.offscreen-arrow {
+    position: absolute;
+    width: 80px;
+    height: 80px;
+}

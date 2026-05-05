@@ -1,0 +1,47 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <ui:VisualElement name="hud-root" class="hud-root">
+        <ui:VisualElement name="top-left" class="zone zone-top-left" picking-mode="Ignore" />
+
+        <ui:VisualElement name="top-center" class="zone zone-top-center" picking-mode="Ignore">
+            <ui:VisualElement name="round-card" class="brutal-card card-round">
+                <ui:VisualElement class="brutal-shadow" />
+                <ui:VisualElement class="brutal-content lavender">
+                    <ui:Label name="round-label" text="ROUND 1" class="display-bold round-text" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <ui:VisualElement name="top-right" class="zone zone-top-right">
+            <ui:Button name="pause-button" text="II" class="brutal-button lemon" />
+        </ui:VisualElement>
+
+        <ui:VisualElement name="center-countdown" class="zone zone-countdown" picking-mode="Ignore">
+            <ui:VisualElement name="countdown-card" class="brutal-card card-countdown">
+                <ui:VisualElement class="brutal-shadow" />
+                <ui:VisualElement name="countdown-content" class="brutal-content cream">
+                    <ui:Label name="countdown-label" text="3" class="display-bold countdown-text" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <ui:VisualElement name="world-layer" class="zone zone-world" picking-mode="Ignore" />
+
+        <ui:VisualElement name="game-over-panel" class="brutal-card card-gameover" picking-mode="Ignore">
+            <ui:VisualElement class="brutal-shadow" />
+            <ui:VisualElement name="gameover-content" class="brutal-content dustypink">
+                <ui:Label name="game-over-label" text="WINNER!" class="display-bold gameover-text" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <ui:VisualElement name="pause-modal" class="pause-modal">
+            <ui:VisualElement class="brutal-card card-pause">
+                <ui:VisualElement class="brutal-shadow" />
+                <ui:VisualElement class="brutal-content cream pause-content">
+                    <ui:Label text="PAUSED (DEBUG)" class="display-bold pause-title-text" />
+                    <ui:Button name="pause-resume" text="RESUME" class="brutal-button mint pause-action" />
+                    <ui:Button name="pause-exit"   text="EXIT"   class="brutal-button dustypink pause-action" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

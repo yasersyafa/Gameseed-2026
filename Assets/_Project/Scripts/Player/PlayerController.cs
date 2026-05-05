@@ -145,6 +145,10 @@ public class PlayerController : MonoBehaviour
             gameObject.AddComponent<HitFlash>();
         if (GetComponent<PlayerJuice>() == null && visual != null)
             gameObject.AddComponent<PlayerJuice>();
+        if (GetComponent<ChargeTellVfx>() == null)
+            gameObject.AddComponent<ChargeTellVfx>();
+        if (GetComponent<RespawnInvulnFlash>() == null && visual != null)
+            gameObject.AddComponent<RespawnInvulnFlash>();
 
         _powerUps = GetComponent<PowerUpController>();
         if (_powerUps == null) _powerUps = gameObject.AddComponent<PowerUpController>();

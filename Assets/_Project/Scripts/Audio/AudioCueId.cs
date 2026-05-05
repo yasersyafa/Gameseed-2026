@@ -11,9 +11,11 @@ public enum AudioCueId
     BoomerangCatch,
     BoomerangWallBounce,
     BoomerangWhoosh,
+    BoomerangParry,
     PlayerHit,
     PlayerDeath,
     PlayerDash,
+    ChargeLoop,
 
     // ── Round / Match ──────────────────────────────────────────────────
     CountdownTick,

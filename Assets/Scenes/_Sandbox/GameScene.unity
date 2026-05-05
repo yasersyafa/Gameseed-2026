@@ -1931,8 +1931,9 @@ MonoBehaviour:
   - {fileID: 1492049832}
   pool:
   - {fileID: 11400000, guid: cb2fcf8c1b1b8459a9538853d4930fb7, type: 2}
-  spawnInterval: 5
-  initialDelay: 3
+  - {fileID: 11400000, guid: d167699b6befa4a66a4dffbb6797fdbf, type: 2}
+  spawnInterval: 7
+  initialDelay: 5
   maxConcurrent: 3
 --- !u!1 &821714342
 GameObject:
@@ -3819,11 +3820,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CinemachineCameraManager
   targetGroup: {fileID: 360598739}
   impulseSource: {fileID: 1058710347}
+  vcam: {fileID: 0}
   targetWeight: 1
   targetRadius: 5
   smallShake: 0.5
   mediumShake: 1.5
   largeShake: 3
+  parryFovDelta: -8
+  parryFovTime: 0.18
+  elimFovDelta: -12
+  elimFovTime: 0.45
 --- !u!114 &1542131971
 MonoBehaviour:
   m_ObjectHideFlags: 0

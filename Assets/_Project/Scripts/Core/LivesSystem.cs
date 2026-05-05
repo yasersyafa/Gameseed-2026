@@ -50,7 +50,10 @@ public class LivesSystem : MonoBehaviour
         _roundOver    = false;
 
         for (int i = 0; i < count; i++)
+        {
             _lives[i] = livesPerPlayer;
+            GameEvents.RaiseLivesChanged(i, livesPerPlayer);
+        }
     }
 
     public void PlayerDied(int playerIndex, PlayerController controller)
@@ -60,6 +63,7 @@ public class LivesSystem : MonoBehaviour
         GameEvents.RaisePlayerHit(playerIndex, controller);
 
         _lives[playerIndex]--;
+        GameEvents.RaiseLivesChanged(playerIndex, _lives[playerIndex]);
 
         if (_lives[playerIndex] <= 0)
         {

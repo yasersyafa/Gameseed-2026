@@ -19,6 +19,26 @@ Newest first.
 - Round handoff race: gameplay used to resume ~1.5s before the iris
   finished opening. `RoundEndRoutine` now awaits iris close+hold and
   `StartRoundRoutine` awaits iris open before the countdown (`3857b8c`).
+- Build settings: `GameScene.unity` was missing — `SampleScene` was
+  shipping by default. `EditorBuildSettings.asset` now lists
+  `_Sandbox/GameScene.unity` as build index 0; `SampleScene` demoted.
+- Countdown HUD intermittently skipped digits (`3, 1, GO!`). Root cause:
+  schedule + `experimental.animation` race — fade-out (1→0 over 400ms,
+  starting at +550ms) had a 50ms safety margin before the next tick;
+  editor stutter pushed the running fade past the 1000ms boundary so the
+  next tick's `style.opacity = 1` was overridden on the animation's next
+  update. Rewrote `HandleCountdown` as a coroutine on
+  `Time.unscaledDeltaTime` that restarts on every tick, force-writing
+  opacity=1 on the first frame.
+- Pause button click never registered: scene was missing `EventSystem`
+  with `InputSystemUIInputModule` (project uses new Input System), and
+  UI Toolkit `PerformPick` early-outs on `pickingMode = Ignore`. Root +
+  `top-right` zones are now `Position`; `HUDBootstrap.EnsureEventSystem`
+  spawns the module if absent and replaces a legacy `BaseInputModule`.
+- P# tag font missing: `ApplyFonts` queried only labels existing at
+  Awake; cloned `PlayerRowTemplate` labels were created later and got no
+  font. `EnsurePlayerRow` now sets `unityFontDefinition` on the tag
+  label explicitly after instantiation.
 
 ### Changed
 - `RoundManager` drives `IrisTransition` via coroutines (`CoCloseAndHold`,
@@ -36,12 +56,77 @@ Newest first.
   (`ed6a656`).
 - Pickup anchors and Fire power-up tint tuned; hit impulse switched
   to curve preset with 0.15s duration (`71d0fa9`).
+- HUD migrated from runtime-built uGUI/UIElements to UXML/USS
+  asset-driven design system. Legacy `GameHUDOverlay` (uGUI) and
+  the interim `GameHUDToolkit` (runtime VisualElements) deleted.
+- HUD layout: per-player info now in a top-left vertical stack.
+  Round info (`ROUND N`) is centered top. Top-right exposes a
+  debug-only pause button.
+- Player score on HUD: numeric label replaced by a row of ink-filled
+  square dots, one per point.
+- Round label format dropped `R X / Y` in favour of `ROUND N`.
+- Lives indicator pips and per-player corner panels removed.
+- `Boomerang.Reflect` retints the trail to the new owner's color and
+  reassigns `_throwerIndex` on parry ownership swap.
+- `PlayerController.EnsureRuntimeComponents` auto-adds
+  `ChargeTellVfx` and `RespawnInvulnFlash` alongside existing juice
+  components.
+- `CinemachineCameraManager` now resolves `CinemachineCamera` and
+  punches `Lens.FieldOfView` on parry / elimination (unscaled time).
+- Player HUD rows materialise on `OnRoundStarted` for every joined
+  player; idempotent across rounds.
 
 ### Added
 - `PrimitivePool` for runtime-spawned cube/sphere VFX primitives
   (`ed6a656`).
 - `ShaderHelper` and `FontHelper` utilities replacing scattered
   `Shader.Find` / TMP font lookups (`ed6a656`).
+- Juice layer:
+  - `HitImpactVfx` — directional pooled-sphere burst on `OnPlayerHit`.
+  - `PostFxJuice` — runtime URP `Volume` (priority 100) pulses
+    `Vignette` + `ChromaticAberration` on hit / elim / parry / game
+    over, on unscaled time.
+  - `ChargeTellVfx` — per-player ground ring scaling with charge
+    time; pops on release.
+  - `WinFlourish` — confetti cube burst at winner position on
+    `OnGameOver`, palette + winner-color mix.
+  - `RespawnInvulnFlash` — `visual.enabled` toggle for 1.5s as i-frame
+    tell on `OnPlayerRespawned`.
+  - `JuiceBootstrap` — `RuntimeInitializeOnLoadMethod` spawns global
+    juice listeners on a `DontDestroyOnLoad` GameObject.
+- Audio cues: `BoomerangParry`, `ChargeLoop` IDs.
+  `AudioManager` handlers for wall bounce, parry, pickup spawn,
+  pickup collect, charge start. `AudioSetupAutomation` resolves
+  pitch / volume metadata for the new cues so re-running setup
+  scaffolds silent stubs.
+- Camera FOV punch via `CinemachineCameraManager.PunchFov` (parry
+  −8°/0.18s, elim −12°/0.45s, unscaled coroutine).
+- `GameEvents.OnLivesChanged(playerIndex, lives)` event raised by
+  `LivesSystem.RegisterPlayers` + `PlayerDied`.
+- Fonts: Archivo Black (display) and JetBrains Mono Bold (mono),
+  both OFL, under `Assets/_Project/Fonts/Resources/`. New
+  `FontHelper.Display()` / `FontHelper.Mono()` cached lookups.
+- HUD design system (UXML + USS) under `Assets/_Project/UI/HUD/Resources/`:
+  - `HUDView.uxml` — root tree with named zones (top-left, top-center,
+    top-right, center-countdown, world-layer, game-over-panel,
+    pause-modal).
+  - `PlayerRowTemplate.uxml` — info card (P# tag + ink-dot points).
+  - `HUDStyle.uss` — neo-brutalism + soft pastel palette
+    (cream / peach / sky / mint / lemon / lavender / dustypink / ink),
+    `.brutal-card` composition (shadow + content + tint variants),
+    `.brutal-button` with `:hover` / `:active`, `.point-dot`
+    primitives, typography classes.
+- `GameHUDView` generator MonoBehaviour: loads UXML/USS via
+  `Resources`, clones `PlayerRowTemplate` per joined player, queries
+  named elements, binds `GameEvents`, drives countdown coroutine,
+  ELIM popup, off-screen arrows, pause modal, game-over reveal.
+- `HUDBootstrap` now also ensures an `EventSystem` with
+  `InputSystemUIInputModule` exists at `AfterSceneLoad` so UI Toolkit
+  Buttons receive pointer events under the new Input System.
+- Debug-only pause modal (`UNITY_EDITOR || DEVELOPMENT_BUILD`):
+  `Resume` and `Exit` actions toggle `Time.timeScale` and
+  `AudioListener.pause`; `Exit` stops play in editor or
+  `Application.Quit` in build.
 
 ## 2026-05-01
 

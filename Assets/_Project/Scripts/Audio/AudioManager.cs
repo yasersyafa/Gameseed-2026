@@ -66,26 +66,38 @@ public class AudioManager : MonoBehaviour
 
     private void OnEnable()
     {
-        GameEvents.OnBoomerangThrown += HandleThrow;
-        GameEvents.OnBoomerangCaught += HandleCatch;
-        GameEvents.OnPlayerDashed    += HandleDash;
-        GameEvents.OnPlayerHit       += HandleHit;
-        GameEvents.OnPlayerEliminated+= HandleDeath;
-        GameEvents.OnCountdownTick   += HandleCountdown;
-        GameEvents.OnRoundEnded      += HandleRoundEnd;
-        GameEvents.OnGameOver        += HandleGameOver;
+        GameEvents.OnBoomerangThrown    += HandleThrow;
+        GameEvents.OnBoomerangCaught    += HandleCatch;
+        GameEvents.OnBoomerangWallBounce+= HandleWallBounce;
+        GameEvents.OnBoomerangParried   += HandleParry;
+        GameEvents.OnPlayerDashed       += HandleDash;
+        GameEvents.OnPlayerHit          += HandleHit;
+        GameEvents.OnPlayerEliminated   += HandleDeath;
+        GameEvents.OnCountdownTick      += HandleCountdown;
+        GameEvents.OnRoundEnded         += HandleRoundEnd;
+        GameEvents.OnGameOver           += HandleGameOver;
+        GameEvents.OnPickupSpawned      += HandlePickupSpawned;
+        GameEvents.OnPickupCollected    += HandlePickupCollected;
+        GameEvents.OnChargeStarted      += HandleChargeStarted;
+        GameEvents.OnChargeReleased     += HandleChargeReleased;
     }
 
     private void OnDisable()
     {
-        GameEvents.OnBoomerangThrown -= HandleThrow;
-        GameEvents.OnBoomerangCaught -= HandleCatch;
-        GameEvents.OnPlayerDashed    -= HandleDash;
-        GameEvents.OnPlayerHit       -= HandleHit;
-        GameEvents.OnPlayerEliminated-= HandleDeath;
-        GameEvents.OnCountdownTick   -= HandleCountdown;
-        GameEvents.OnRoundEnded      -= HandleRoundEnd;
-        GameEvents.OnGameOver        -= HandleGameOver;
+        GameEvents.OnBoomerangThrown    -= HandleThrow;
+        GameEvents.OnBoomerangCaught    -= HandleCatch;
+        GameEvents.OnBoomerangWallBounce-= HandleWallBounce;
+        GameEvents.OnBoomerangParried   -= HandleParry;
+        GameEvents.OnPlayerDashed       -= HandleDash;
+        GameEvents.OnPlayerHit          -= HandleHit;
+        GameEvents.OnPlayerEliminated   -= HandleDeath;
+        GameEvents.OnCountdownTick      -= HandleCountdown;
+        GameEvents.OnRoundEnded         -= HandleRoundEnd;
+        GameEvents.OnGameOver           -= HandleGameOver;
+        GameEvents.OnPickupSpawned      -= HandlePickupSpawned;
+        GameEvents.OnPickupCollected    -= HandlePickupCollected;
+        GameEvents.OnChargeStarted      -= HandleChargeStarted;
+        GameEvents.OnChargeReleased     -= HandleChargeReleased;
     }
 
     // ── Public API ────────────────────────────────────────────────────────────
@@ -222,6 +234,12 @@ public class AudioManager : MonoBehaviour
     }
     private void HandleRoundEnd(int winnerIndex)             => Play(AudioCueId.RoundWin);
     private void HandleGameOver(int winnerIndex)             => Play(AudioCueId.MatchWin);
+    private void HandleWallBounce()                          => Play(AudioCueId.BoomerangWallBounce);
+    private void HandleParry(int playerIndex)                => Play(AudioCueId.BoomerangParry);
+    private void HandlePickupSpawned()                       => Play(AudioCueId.PickupSpawn);
+    private void HandlePickupCollected(int idx, int key)     => Play(AudioCueId.PickupCollect);
+    private void HandleChargeStarted(int idx)                => Play(AudioCueId.ChargeLoop);
+    private void HandleChargeReleased(int idx, float c)      { /* loop self-stops on next throw cue */ }
 
     // ── Music ducking ────────────────────────────────────────────────────────
     private Coroutine _duckRoutine;

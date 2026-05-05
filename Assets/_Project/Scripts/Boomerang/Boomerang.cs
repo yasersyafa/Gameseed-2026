@@ -155,6 +155,14 @@ public class Boomerang : MonoBehaviour
         {
             _owner           = newOwner;
             _ownerController = newOwner.GetComponent<PlayerController>();
+            _throwerIndex    = _ownerController != null ? _ownerController.PlayerIndex : _throwerIndex;
+
+            // Retint trail to new owner color so a parried shot reads as the parrier's.
+            if (_ownerController != null && _ownerController.visual != null
+                && _ownerController.visual.sharedMaterial != null)
+            {
+                SetTrailColor(_ownerController.visual.sharedMaterial.color);
+            }
         }
 #if UNITY_EDITOR
         Debug.Log($"[Boomerang] Reflect newOwner={(newOwner != null ? newOwner.name : "same")} scale={speedScale:F2}");

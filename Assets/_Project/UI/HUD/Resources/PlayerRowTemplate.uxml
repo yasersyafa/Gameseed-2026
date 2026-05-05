@@ -1,0 +1,11 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <ui:VisualElement name="player-row" class="player-row" picking-mode="Ignore">
+        <ui:VisualElement name="info-card" class="brutal-card card-info">
+            <ui:VisualElement class="brutal-shadow" />
+            <ui:VisualElement name="info-content" class="brutal-content info-content">
+                <ui:Label name="tag" text="P?" class="display-bold tag-text" />
+                <ui:VisualElement name="dots" class="point-dots" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
