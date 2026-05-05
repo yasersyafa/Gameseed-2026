@@ -74,6 +74,12 @@ Newest first.
   loop. `PickupSpawner.SpawnLoop` already has its own
   `initialDelay` so starting earlier doesn't drop a pickup
   mid-countdown.
+- Power-up effects had no visible feedback — players couldn't read
+  opponents' loadouts, shield absorption looked like a dropped
+  frame, expiry was silent, fire / ice boomerangs in flight were
+  visually identical to a vanilla shot. Added a five-piece visual
+  layer covering pickup → carry → activate → expire (see Added /
+  Changed).
 
 ### Changed
 - `RoundManager` drives `IrisTransition` via coroutines (`CoCloseAndHold`,
@@ -142,6 +148,28 @@ Newest first.
   `HandleIrisClosed` / `RestartMatch` methods migrated to
   `GameOverView`. Cleaner separation, no shared state across
   panels.
+- `GameEvents.OnPickupCollected` signature extended from
+  `(int idx, int key)` to `(int idx, int key, Vector3 worldPos)`
+  so juice listeners can spawn the collect burst at the pickup's
+  world position without round-tripping through `GameManager`.
+- `ShieldEffect.OnBeforeHit` now raises `OnShieldAbsorbed` before
+  returning true. `HitImpactVfx` listens and spawns a lemon-yellow
+  directional burst at the player; `AudioManager` plays
+  `AudioCueId.ShieldBreak`.
+- `PlayerController.ThrowBoomerangCharged` retints the boomerang
+  trail by `OnHitStatus` *after* `PowerUps.OnBeforeThrow` runs:
+  Burning → orange-red, Frozen → sky-blue. Visible-from-far
+  telegraph for fire / ice projectiles.
+- `PowerUpController` raises `OnPowerUpRemoved` at every stack
+  mutation site (mutex drop, stack overflow, timed expire,
+  shield consume, ClearAll). New `TopKey()` accessor returns the
+  newest active effect key for juice listeners.
+- `PlayerController.EnsureRuntimeComponents` auto-adds
+  `PowerUpAuraVfx` so any joined player gets the active-effect
+  aura without scene wiring.
+- `JuiceSetupAutomation` also `EnsureComponent<PickupCollectVfx>`
+  on `[Juice]` so the collect burst comes online with the rest of
+  the scene-baked juice listeners.
 
 ### Removed
 - `GameEvents.OnLivesChanged` (no consumers since the HUD lives
@@ -271,6 +299,21 @@ Newest first.
   via `Tools > Boomerang Fu > Setup/HUD`. Registered in
   `RootLifetimeScope` so `[Inject] Construct(RoundManager)` fires
   for the RESTART hookup.
+- Power-up visual layer:
+  - `Juice/PickupCollectVfx.cs` — directional ring burst of 12
+    pooled spheres in the effect's tint at the pickup world-pos.
+  - `Juice/PowerUpAuraVfx.cs` — per-player ground ring tinted by
+    `PowerUpController.TopKey()`, sinusoidal pulse, retints on
+    every stack mutation, fades when stack empties. Also fires a
+    short `HitFlash` pulse on `OnPowerUpRemoved` so the holder
+    feels the loss.
+  - `Juice/PowerUpVisuals.cs` — static `GetTint(key)` table
+    mirroring `PowerUpSetupAutomation` defaults. Juice listeners
+    read from this without touching the live `PowerUpSO` asset.
+  - `GameEvents.OnPowerUpRemoved(int idx, int key)` event.
+  - `GameEvents.OnShieldAbsorbed(int idx, Vector3 hitDir)` event.
+  - `AudioCueId.ShieldBreak` + `AudioManager` handler +
+    `AudioSetupAutomation` pitch / volume meta.
 
 ## 2026-05-01
 
