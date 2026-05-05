@@ -132,6 +132,17 @@ public class Boomerang : MonoBehaviour
         _maxDistanceOverride = distance;
     }
 
+    /// <summary>Power-up tweak: extra wall bounces (Extra effect).</summary>
+    public void SetMaxBounces(int v) => maxBounces = Mathf.Max(0, v);
+
+    /// <summary>Power-up tweak: redirect velocity mid-flight (Telekinesis).</summary>
+    public void Steer(Vector3 newDir)
+    {
+        if (_state != BoomerangState.Flying) return;
+        if (newDir.sqrMagnitude < 0.001f) return;
+        _velocity = newDir.normalized * _velocity.magnitude;
+    }
+
     /// <summary>Manual recall — paksa balik ke owner walau belum max distance.</summary>
     public void ForceRecall()
     {
@@ -263,6 +274,23 @@ public class Boomerang : MonoBehaviour
         trail.colorGradient = _trailGradient;
     }
 
+    /// <summary>
+    /// AoE damage on impact (Explosive power-up). Reuses existing knockback
+    /// path so eliminated cascade respects shield / status effects.
+    /// </summary>
+    private void ApplyExplosion(Vector3 center, PlayerController primaryVictim)
+    {
+        var hits = Physics.OverlapSphere(center, ExplodeRadius);
+        for (int i = 0; i < hits.Length; i++)
+        {
+            if (!hits[i].CompareTag(playerTag)) continue;
+            var pc = hits[i].GetComponentInParent<PlayerController>();
+            if (pc == null || pc == primaryVictim || pc.IsEliminated) continue;
+            Vector3 dir = (pc.transform.position - center).normalized;
+            pc.OnHitByBoomerang(_throwerIndex, dir);
+        }
+    }
+
     private void SpinSelf()
     {
         float speedFactor = _speed > 0.01f
@@ -300,6 +328,11 @@ public class Boomerang : MonoBehaviour
                     victim.Status?.Apply(OnHitStatus, OnHitStatusDuration, _throwerIndex);
 
                 victim.OnHitByBoomerang(_throwerIndex, _velocity.normalized);
+
+                if (ExplodeOnHit && ExplodeRadius > 0f)
+                    ApplyExplosion(collision.contacts.Length > 0
+                        ? collision.contacts[0].point
+                        : _rb.position, victim);
             }
             Destroy(gameObject);
             if (_ownerController != null) _ownerController.CatchBoomerang();

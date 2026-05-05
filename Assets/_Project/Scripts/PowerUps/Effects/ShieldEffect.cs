@@ -26,4 +26,6 @@ public class ShieldEffect : IPowerUpEffect
             GameEvents.RaiseShieldAbsorbed(player.PlayerIndex, hitDir);
         return true;
     }
+    public bool OnBeforeDash(PlayerController player) => false;
+    public void Tick(PlayerController player) { }
 }

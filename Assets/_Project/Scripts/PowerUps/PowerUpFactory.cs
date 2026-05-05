@@ -14,20 +14,18 @@ public static class PowerUpFactory
     {
         return key switch
         {
-            PowerUpSO.PowerUpKey.Fire   => new FireEffect(duration),
-            PowerUpSO.PowerUpKey.Ice    => new IceEffect(duration),
-            PowerUpSO.PowerUpKey.Multi  => new MultiEffect(duration),
-            PowerUpSO.PowerUpKey.Shield => new ShieldEffect(duration),
-
-            // Stubs (Phase 3d)
-            PowerUpSO.PowerUpKey.Caffeinated      => new StubPowerUp(key, duration),
-            PowerUpSO.PowerUpKey.DashThroughWalls => new StubPowerUp(key, duration),
-            PowerUpSO.PowerUpKey.Teleport         => new StubPowerUp(key, duration),
-            PowerUpSO.PowerUpKey.Explosive        => new StubPowerUp(key, duration),
-            PowerUpSO.PowerUpKey.Extra            => new StubPowerUp(key, duration),
-            PowerUpSO.PowerUpKey.Disguise         => new StubPowerUp(key, duration),
-            PowerUpSO.PowerUpKey.Telekinesis      => new StubPowerUp(key, duration),
-            PowerUpSO.PowerUpKey.Decoy            => new StubPowerUp(key, duration),
+            PowerUpSO.PowerUpKey.Fire             => new FireEffect(duration),
+            PowerUpSO.PowerUpKey.Ice              => new IceEffect(duration),
+            PowerUpSO.PowerUpKey.Multi            => new MultiEffect(duration),
+            PowerUpSO.PowerUpKey.Shield           => new ShieldEffect(duration),
+            PowerUpSO.PowerUpKey.Caffeinated      => new CaffeinatedEffect(duration),
+            PowerUpSO.PowerUpKey.DashThroughWalls => new DashThroughWallsEffect(duration),
+            PowerUpSO.PowerUpKey.Teleport         => new TeleportEffect(duration),
+            PowerUpSO.PowerUpKey.Explosive        => new ExplosiveEffect(duration),
+            PowerUpSO.PowerUpKey.Extra            => new ExtraEffect(duration),
+            PowerUpSO.PowerUpKey.Disguise         => new DisguiseEffect(duration),
+            PowerUpSO.PowerUpKey.Telekinesis      => new TelekinesisEffect(duration),
+            PowerUpSO.PowerUpKey.Decoy            => new DecoyEffect(duration),
 
             _ => null,
         };

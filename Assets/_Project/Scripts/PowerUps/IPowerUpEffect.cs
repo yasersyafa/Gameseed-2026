@@ -19,4 +19,10 @@ public interface IPowerUpEffect
 
     /// <summary>Return true untuk absorb hit (Shield). False = lanjutkan ke OnHitByBoomerang.</summary>
     bool OnBeforeHit(PlayerController player, int killerIndex, Vector3 hitDir);
+
+    /// <summary>Return true untuk consume dash input (Teleport). False = dash jalan normal.</summary>
+    bool OnBeforeDash(PlayerController player);
+
+    /// <summary>Per-frame tick from PowerUpController (Telekinesis steers active boomerang, etc.).</summary>
+    void Tick(PlayerController player);
 }

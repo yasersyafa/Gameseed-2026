@@ -26,4 +26,6 @@ public class StubPowerUp : IPowerUpEffect
     public void OnRemove(PlayerController player) { }
     public void OnBeforeThrow(PlayerController player, Boomerang boomerang) { }
     public bool OnBeforeHit(PlayerController player, int killerIndex, Vector3 hitDir) => false;
+    public bool OnBeforeDash(PlayerController player) => false;
+    public void Tick(PlayerController player) { }
 }

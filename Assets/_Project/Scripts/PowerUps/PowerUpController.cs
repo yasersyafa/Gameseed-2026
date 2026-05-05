@@ -37,6 +37,10 @@ public class PowerUpController : MonoBehaviour
     {
         if (_active.Count == 0) return;
 
+        // Per-frame tick (Telekinesis steers active boomerang, etc).
+        for (int i = 0; i < _active.Count; i++)
+            _active[i].effect.Tick(_player);
+
         for (int i = _active.Count - 1; i >= 0; i--)
         {
             if (Time.time >= _active[i].expireAt)
@@ -95,6 +99,26 @@ public class PowerUpController : MonoBehaviour
     {
         for (int i = 0; i < _active.Count; i++)
             _active[i].effect.OnBeforeThrow(_player, boomerang);
+    }
+
+    /// <summary>
+    /// Return true if any effect consumed the dash input (Teleport). Consuming
+    /// effects are removed from the stack same shape as <see cref="OnBeforeHit"/>.
+    /// </summary>
+    public bool OnBeforeDash()
+    {
+        for (int i = _active.Count - 1; i >= 0; i--)
+        {
+            if (_active[i].effect.OnBeforeDash(_player))
+            {
+                var eff = _active[i].effect;
+                _active.RemoveAt(i);
+                eff.OnRemove(_player);
+                GameEvents.RaisePowerUpRemoved(_player.PlayerIndex, (int)eff.Key);
+                return true;
+            }
+        }
+        return false;
     }
 
     /// <summary>Return true if any effect absorbed the hit.</summary>

@@ -22,4 +22,6 @@ public class FireEffect : IPowerUpEffect
     }
 
     public bool OnBeforeHit(PlayerController player, int killerIndex, Vector3 hitDir) => false;
+    public bool OnBeforeDash(PlayerController player) => false;
+    public void Tick(PlayerController player) { }
 }

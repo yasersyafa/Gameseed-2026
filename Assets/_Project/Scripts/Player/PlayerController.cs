@@ -64,12 +64,17 @@ public class PlayerController : MonoBehaviour
     public int PlayerIndex => _playerIndex;
     public float MoveSpeed => moveSpeed;
     public Boomerang ActiveBoomerang { get; set; }
+
+    /// <summary>Power-up speed scalar (Caffeinated). 1.0 = neutral.</summary>
+    public float MoveSpeedMultiplier { get; set; } = 1f;
+    /// <summary>Power-up dash-cooldown scalar (Caffeinated). 1.0 = neutral.</summary>
+    public float DashCooldownMultiplier { get; set; } = 1f;
     #endregion
 
     // Expose settings to state (read-only)
     public float DashForce       => dashForce;
     public float DashDuration    => dashDuration;
-    public float DashCooldown    => dashCooldown;
+    public float DashCooldown    => dashCooldown * DashCooldownMultiplier;
     public float ChargeMinForce    => chargeMinForce;
     public float ChargeMaxForce    => chargeMaxForce;
     public float ChargeMaxTime     => chargeMaxTime;
@@ -203,8 +208,10 @@ public class PlayerController : MonoBehaviour
 
     public void OnDash(InputValue value)
     {
-        if (value.isPressed)
-            _currentState?.HandleDash(this);
+        if (!value.isPressed) return;
+        // Power-ups (Teleport) can consume the dash input wholesale.
+        if (PowerUps != null && PowerUps.OnBeforeDash()) return;
+        _currentState?.HandleDash(this);
     }
 
     public void OnThrow(InputValue value)
@@ -241,7 +248,7 @@ public class PlayerController : MonoBehaviour
         if (MoveDirection != Vector3.zero)
             _lastMoveDirection = MoveDirection;
 
-        Rb.linearVelocity = MoveDirection * moveSpeed;
+        Rb.linearVelocity = MoveDirection * moveSpeed * MoveSpeedMultiplier;
     }
 
     public void ApplyRotation()

@@ -314,6 +314,47 @@ Newest first.
   - `GameEvents.OnShieldAbsorbed(int idx, Vector3 hitDir)` event.
   - `AudioCueId.ShieldBreak` + `AudioManager` handler +
     `AudioSetupAutomation` pitch / volume meta.
+- Power-up behaviour (Phase 1) — all 8 stub effects now ship real
+  gameplay logic. `PowerUpFactory` swaps `StubPowerUp` for the new
+  classes; `IPowerUpEffect` gained `OnBeforeDash(player) -> bool`
+  (consume dash input) and `Tick(player)` (per-frame work) hooks,
+  driven from `PowerUpController.Update`.
+  - `CaffeinatedEffect` — multiplies `PlayerController.MoveSpeedMultiplier`
+    × 1.30 and `DashCooldownMultiplier` × 0.60 on apply, restores on
+    remove. Stack-compounds cleanly.
+  - `ExplosiveEffect` — sets `Boomerang.ExplodeOnHit` + `ExplodeRadius`
+    on `OnBeforeThrow`. New `Boomerang.ApplyExplosion(center, victim)`
+    runs `Physics.OverlapSphere`, routes `OnHitByBoomerang` to every
+    other `Player`-tagged collider in radius for cascade kill.
+  - `TeleportEffect` — one-shot dash replacement. `OnBeforeDash`
+    warps the player along `LastMoveDirection` × 5f via `Rb.position`,
+    returns true to consume the effect.
+  - `DashThroughWallsEffect` — per-pair `Physics.IgnoreCollision`
+    between the player collider and every `Wall`-tagged collider on
+    apply; fully restores on remove. Avoids the global
+    `IgnoreLayerCollision` pitfall (would also affect other players).
+  - `ExtraEffect` — until the concurrent-throws refactor lands, maps
+    to `Boomerang.SetMaxBounces(5)` + `SetMaxDistance(ChargeMaxDistance × 1.30)`
+    via `OnBeforeThrow`. Reads as a more durable / longer-reach shot.
+  - `DisguiseEffect` — cosmetic gray tint via `MaterialPropertyBlock`
+    on apply; restores original color on remove. Full "boomerang
+    ignore until next throw" behaviour deferred until tag swap is
+    wired.
+  - `TelekinesisEffect` — per-frame `Tick` calls
+    `Boomerang.Steer(LastMoveDirection)` while `ActiveBoomerang` is
+    in `Flying` state. Lets the player curve a thrown shot.
+  - `DecoyEffect` — spawns a Player-tagged cube clone at backward
+    offset with kinematic `Rigidbody` so opposing boomerangs collide.
+    `DecoyClone` MonoBehaviour self-destructs on first collision.
+- `PlayerController.MoveSpeedMultiplier` + `DashCooldownMultiplier`
+  properties (default 1f) — `ApplyMovement` multiplies; `DashCooldown`
+  getter applies multiplier.
+- `PlayerController.OnDash` now gates on `PowerUps.OnBeforeDash()` so
+  effects can consume the dash input.
+- `Boomerang.SetMaxBounces(int)` + `Steer(Vector3)` setters.
+- `Boomerang.ApplyExplosion(center, primaryVictim)` private — AoE
+  cascade kill via `Physics.OverlapSphere` on player-hit when
+  `ExplodeOnHit`.
 
 ## 2026-05-01
 
