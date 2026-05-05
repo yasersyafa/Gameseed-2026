@@ -66,6 +66,24 @@ Newest first.
 - HUD migrated from runtime-built uGUI/UIElements to UXML/USS
   asset-driven design system. Legacy `GameHUDOverlay` (uGUI) and
   the interim `GameHUDToolkit` (runtime VisualElements) deleted.
+- `LivesSystem.eliminatedHoldPos` is now a serialized `Vector3` —
+  was hardcoded `(0, -100, 0)` and would trap any arena whose
+  floor extends below 0.
+- `StatusEffectController` reuses a cached scratch `List<>` for
+  `ClearAll` and the per-frame expiry sweep instead of allocating
+  per call.
+- Trail / line materials in `Boomerang`, `DashTrail`, and
+  `AimIndicator` now share `ShaderHelper.SharedUnlit()` via
+  `sharedMaterial` instead of `new Material(ShaderHelper.GetUnlit())`
+  per spawn. Per-throw VRAM leak gone; color is driven by gradients.
+
+### Removed
+- `GameEvents.OnLivesChanged` (no consumers since the HUD lives
+  pip indicator was dropped) and its `Raise` helper / `LivesSystem`
+  callsites.
+- `GameManager.EnableJoining` (dead public API).
+- `PowerUpController.ActiveEffects` allocator-getter (no callers).
+- Empty `HitImpactVfx.HandleParry` subscription stub.
 - HUD layout: per-player info now in a top-left vertical stack.
   Round info (`ROUND N`) is centered top. Top-right exposes a
   debug-only pause button.
