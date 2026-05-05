@@ -31,4 +31,21 @@ public static class ShaderHelper
             _spriteDefault = Shader.Find("Sprites/Default") ?? GetUnlit();
         return _spriteDefault;
     }
+
+    private static Material _sharedUnlit;
+
+    /// <summary>
+    /// One shared unlit Material reused across runtime LineRenderer / TrailRenderer
+    /// instances whose color is driven via Gradient (not material color). Avoids
+    /// `new Material(...)` per spawn — those leak materials and bloat VRAM.
+    /// </summary>
+    public static Material SharedUnlit()
+    {
+        if (_sharedUnlit == null)
+        {
+            _sharedUnlit = new Material(GetUnlit());
+            _sharedUnlit.name = "[SharedUnlit]";
+        }
+        return _sharedUnlit;
+    }
 }

@@ -92,7 +92,7 @@ public class Boomerang : MonoBehaviour
             trail.time       = 0.3f;
             trail.startWidth = 0.45f;
             trail.endWidth   = 0f;
-            trail.material = new Material(ShaderHelper.GetUnlit());
+            trail.sharedMaterial = ShaderHelper.SharedUnlit();
         }
     }
 
@@ -153,15 +153,22 @@ public class Boomerang : MonoBehaviour
 
         if (newOwner != null)
         {
-            _owner           = newOwner;
-            _ownerController = newOwner.GetComponent<PlayerController>();
-            _throwerIndex    = _ownerController != null ? _ownerController.PlayerIndex : _throwerIndex;
-
-            // Retint trail to new owner color so a parried shot reads as the parrier's.
-            if (_ownerController != null && _ownerController.visual != null
-                && _ownerController.visual.sharedMaterial != null)
+            var newCtrl = newOwner.GetComponent<PlayerController>();
+            // Skip ownership swap if parrier is eliminated — prevents the
+            // boomerang from chasing a hidden player at the off-map hold pos
+            // and drifting forever.
+            if (newCtrl != null && !newCtrl.IsEliminated)
             {
-                SetTrailColor(_ownerController.visual.sharedMaterial.color);
+                _owner           = newOwner;
+                _ownerController = newCtrl;
+                _throwerIndex    = newCtrl.PlayerIndex;
+
+                if (newCtrl.visual != null && newCtrl.visual.sharedMaterial != null)
+                    SetTrailColor(newCtrl.visual.sharedMaterial.color);
+            }
+            else
+            {
+                StartReturning();
             }
         }
 #if UNITY_EDITOR
@@ -274,6 +281,9 @@ public class Boomerang : MonoBehaviour
 
         if (collision.transform == _owner)
         {
+            // Destroy is deferred to end-of-frame; mark consumed so a second
+            // collision callback before destroy doesn't double-trigger Catch.
+            _hasHit = true;
             _ownerController.CatchBoomerang();
             Destroy(gameObject);
             return;

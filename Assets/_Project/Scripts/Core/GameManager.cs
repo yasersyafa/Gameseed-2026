@@ -151,9 +151,4 @@ public class GameManager : MonoBehaviour
     {
         _inputManager.DisableJoining();
     }
-
-    public void EnableJoining()
-    {
-        _inputManager.EnableJoining();
-    }
 }

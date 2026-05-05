@@ -27,7 +27,7 @@ public class DashTrail : MonoBehaviour
         _trail.endWidth   = endWidth;
         _trail.emitting   = false;
 
-        _trail.material = new Material(ShaderHelper.GetUnlit());
+        _trail.sharedMaterial = ShaderHelper.SharedUnlit();
     }
 
     private void Start()
@@ -38,7 +38,8 @@ public class DashTrail : MonoBehaviour
             Color c = rend.sharedMaterial != null ? rend.sharedMaterial.color : Color.white;
             _trail.startColor = new Color(c.r, c.g, c.b, 0.9f);
             _trail.endColor   = new Color(c.r, c.g, c.b, 0f);
-            if (_trail.sharedMaterial != null) _trail.sharedMaterial.color = c;
+            // No mutation of sharedMaterial.color — that would tint every
+            // trail in the scene. Per-trail color comes from start/endColor.
         }
     }
 

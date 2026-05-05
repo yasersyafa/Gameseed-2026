@@ -39,6 +39,13 @@ Newest first.
   Awake; cloned `PlayerRowTemplate` labels were created later and got no
   font. `EnsurePlayerRow` now sets `unityFontDefinition` on the tag
   label explicitly after instantiation.
+- `Boomerang.OnCollisionEnter` owner-catch branch now sets `_hasHit`
+  before deferred `Destroy`. A second collision in the same frame
+  could re-enter the catch path and fire `CatchBoomerang` twice.
+- `Boomerang.Reflect` refuses ownership swap to an eliminated
+  parrier and `StartReturning()`s instead. Previously a parried-into
+  -eliminated player meant the boomerang chased the off-map hold
+  position forever.
 
 ### Changed
 - `RoundManager` drives `IrisTransition` via coroutines (`CoCloseAndHold`,

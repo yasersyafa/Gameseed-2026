@@ -18,9 +18,6 @@ public static class GameEvents
     /// <summary>Player terkena boomerang (sebelum cek nyawa).</summary>
     public static event Action<int, PlayerController> OnPlayerHit;
 
-    /// <summary>Lives berubah — playerIndex, sisa nyawa.</summary>
-    public static event Action<int, int> OnLivesChanged;
-
     // ── Round lifecycle ───────────────────────────────────────────────────────
 
     /// <summary>Round dimulai setelah countdown selesai.</summary>
@@ -78,9 +75,6 @@ public static class GameEvents
     public static void RaisePlayerHit(int index, PlayerController controller)
         => OnPlayerHit?.Invoke(index, controller);
 
-    public static void RaiseLivesChanged(int index, int lives)
-        => OnLivesChanged?.Invoke(index, lives);
-
     public static void RaiseRoundStarted(int round)
         => OnRoundStarted?.Invoke(round);
 
@@ -132,7 +126,6 @@ public static class GameEvents
         OnPlayerEliminated  = null;
         OnPlayerRespawned   = null;
         OnPlayerHit         = null;
-        OnLivesChanged      = null;
         OnRoundStarted      = null;
         OnRoundEnded        = null;
         OnGameOver          = null;

@@ -16,6 +16,7 @@ public class StatusEffectController : MonoBehaviour
     }
 
     private readonly Dictionary<StatusEffectType, ActiveEffect> _active = new();
+    private readonly List<StatusEffectType> _scratch = new(8);
     private PlayerController _player;
 
     private void Awake()
@@ -50,27 +51,27 @@ public class StatusEffectController : MonoBehaviour
 
     public void ClearAll()
     {
-        foreach (var t in new List<StatusEffectType>(_active.Keys))
-            Clear(t);
+        if (_active.Count == 0) return;
+        _scratch.Clear();
+        foreach (var k in _active.Keys) _scratch.Add(k);
+        for (int i = 0; i < _scratch.Count; i++) Clear(_scratch[i]);
+        _scratch.Clear();
     }
 
     private void Update()
     {
         if (_active.Count == 0) return;
 
-        List<StatusEffectType> expired = null;
+        _scratch.Clear();
         foreach (var kv in _active)
         {
-            if (Time.time >= kv.Value.expireAt)
-            {
-                expired ??= new List<StatusEffectType>();
-                expired.Add(kv.Key);
-            }
+            if (Time.time >= kv.Value.expireAt) _scratch.Add(kv.Key);
         }
-        if (expired == null) return;
+        if (_scratch.Count == 0) return;
 
-        foreach (var t in expired)
+        for (int i = 0; i < _scratch.Count; i++)
         {
+            var t   = _scratch[i];
             var src = _active[t].sourcePlayerIndex;
             _active.Remove(t);
 #if UNITY_EDITOR
@@ -78,6 +79,7 @@ public class StatusEffectController : MonoBehaviour
 #endif
             OnEffectExpire(t, src);
         }
+        _scratch.Clear();
     }
 
     // ── Hooks ─────────────────────────────────────────────────────────────────

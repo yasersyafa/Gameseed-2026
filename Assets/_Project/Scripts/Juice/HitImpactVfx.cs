@@ -24,14 +24,12 @@ public class HitImpactVfx : MonoBehaviour
 
     private void OnEnable()
     {
-        GameEvents.OnPlayerHit        += HandleHit;
-        GameEvents.OnBoomerangParried += HandleParry;
+        GameEvents.OnPlayerHit += HandleHit;
     }
 
     private void OnDisable()
     {
-        GameEvents.OnPlayerHit        -= HandleHit;
-        GameEvents.OnBoomerangParried -= HandleParry;
+        GameEvents.OnPlayerHit -= HandleHit;
     }
 
     private void HandleHit(int idx, PlayerController controller)
@@ -41,12 +39,6 @@ public class HitImpactVfx : MonoBehaviour
         Vector3 dir = controller.LastMoveDirection;
         if (dir.sqrMagnitude < 0.001f) dir = controller.transform.forward;
         Burst(pos, -dir, defaultColor);
-    }
-
-    private void HandleParry(int idx)
-    {
-        // Tanpa pos di event — fallback: spawn di kamera-center XZ tidak ideal,
-        // skip kalau tidak ada player ref. Lewatkan: parry juicy via post-fx + audio.
     }
 
     public void Burst(Vector3 pos, Vector3 forward, Color color)

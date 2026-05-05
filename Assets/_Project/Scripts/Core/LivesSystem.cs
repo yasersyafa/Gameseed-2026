@@ -8,8 +8,9 @@ public class LivesSystem : MonoBehaviour
     [SerializeField] private RoundConfigSO configSO;
 
     [Header("Settings")]
-    [SerializeField] private int   livesPerPlayer = 1;
-    [SerializeField] private float respawnDelay   = 2f;
+    [SerializeField] private int     livesPerPlayer  = 1;
+    [SerializeField] private float   respawnDelay    = 2f;
+    [SerializeField] private Vector3 eliminatedHoldPos = new(0f, -100f, 0f);
 
     private RoundManager    _round;
     private IObjectResolver _resolver;
@@ -50,10 +51,7 @@ public class LivesSystem : MonoBehaviour
         _roundOver    = false;
 
         for (int i = 0; i < count; i++)
-        {
             _lives[i] = livesPerPlayer;
-            GameEvents.RaiseLivesChanged(i, livesPerPlayer);
-        }
     }
 
     public void PlayerDied(int playerIndex, PlayerController controller)
@@ -63,7 +61,6 @@ public class LivesSystem : MonoBehaviour
         GameEvents.RaisePlayerHit(playerIndex, controller);
 
         _lives[playerIndex]--;
-        GameEvents.RaiseLivesChanged(playerIndex, _lives[playerIndex]);
 
         if (_lives[playerIndex] <= 0)
         {
@@ -93,7 +90,7 @@ public class LivesSystem : MonoBehaviour
         }
 
         controller.SetEliminated(true);
-        controller.transform.position = new Vector3(0f, -100f, 0f);
+        controller.transform.position = eliminatedHoldPos;
     }
 
     private void ShowPlayer(PlayerController controller, Vector3 position)

@@ -20,16 +20,6 @@ public class PowerUpController : MonoBehaviour
     private readonly List<Active> _active = new(MaxStack);
     private PlayerController _player;
 
-    public IReadOnlyList<IPowerUpEffect> ActiveEffects
-    {
-        get
-        {
-            var list = new List<IPowerUpEffect>(_active.Count);
-            foreach (var a in _active) list.Add(a.effect);
-            return list;
-        }
-    }
-
     private void Awake()
     {
         _player = GetComponent<PlayerController>();
