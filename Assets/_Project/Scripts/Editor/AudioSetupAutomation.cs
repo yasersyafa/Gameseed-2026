@@ -130,6 +130,11 @@ public static class AudioSetupAutomation
                 meta.volMin   = 0.5f; meta.volMax   = 0.7f;
                 break;
 
+            case AudioCueId.ShieldBreak:
+                meta.pitchMin = 1.0f; meta.pitchMax = 1.15f;
+                meta.volMin   = 0.95f; meta.volMax  = 1.0f;
+                break;
+
             case AudioCueId.PlayerHit:
             case AudioCueId.PlayerDeath:
                 meta.pitchMin = 0.9f; meta.pitchMax = 1.05f;

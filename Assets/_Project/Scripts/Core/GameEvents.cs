@@ -64,8 +64,14 @@ public static class GameEvents
     /// <summary>Pickup spawned di arena.</summary>
     public static event Action OnPickupSpawned;
 
-    /// <summary>Player ambil pickup — int = playerIndex, PowerUpSO.PowerUpKey.</summary>
-    public static event Action<int, int> OnPickupCollected;
+    /// <summary>Player ambil pickup — playerIndex, PowerUpSO.PowerUpKey int, world position.</summary>
+    public static event Action<int, int, Vector3> OnPickupCollected;
+
+    /// <summary>Power-up effect dilepas dari stack — playerIndex, PowerUpSO.PowerUpKey int.</summary>
+    public static event Action<int, int> OnPowerUpRemoved;
+
+    /// <summary>Shield effect absorbed an incoming hit — playerIndex, hit direction.</summary>
+    public static event Action<int, Vector3> OnShieldAbsorbed;
 
     // ── Raise helpers (dipanggil sistem yang fire event) ─────────────────────
 
@@ -120,8 +126,14 @@ public static class GameEvents
     public static void RaisePickupSpawned()
         => OnPickupSpawned?.Invoke();
 
-    public static void RaisePickupCollected(int playerIndex, int powerUpKey)
-        => OnPickupCollected?.Invoke(playerIndex, powerUpKey);
+    public static void RaisePickupCollected(int playerIndex, int powerUpKey, Vector3 worldPos)
+        => OnPickupCollected?.Invoke(playerIndex, powerUpKey, worldPos);
+
+    public static void RaisePowerUpRemoved(int playerIndex, int powerUpKey)
+        => OnPowerUpRemoved?.Invoke(playerIndex, powerUpKey);
+
+    public static void RaiseShieldAbsorbed(int playerIndex, Vector3 hitDir)
+        => OnShieldAbsorbed?.Invoke(playerIndex, hitDir);
 
     /// <summary>
     /// Bersihkan semua subscriber — panggil saat scene reload
@@ -147,5 +159,7 @@ public static class GameEvents
         OnIrisClosed           = null;
         OnPickupSpawned        = null;
         OnPickupCollected      = null;
+        OnPowerUpRemoved       = null;
+        OnShieldAbsorbed       = null;
     }
 }

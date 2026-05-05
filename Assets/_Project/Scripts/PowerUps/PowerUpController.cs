@@ -25,6 +25,14 @@ public class PowerUpController : MonoBehaviour
         _player = GetComponent<PlayerController>();
     }
 
+    /// <summary>
+    /// Top of the active stack — newest applied effect. <see cref="PowerUpSO.PowerUpKey.None"/>
+    /// when nothing's active. Used by juice listeners (PowerUpAuraVfx) to pick
+    /// the dominant tint after every stack mutation.
+    /// </summary>
+    public PowerUpSO.PowerUpKey TopKey()
+        => _active.Count > 0 ? _active[_active.Count - 1].effect.Key : PowerUpSO.PowerUpKey.None;
+
     private void Update()
     {
         if (_active.Count == 0) return;
@@ -36,6 +44,7 @@ public class PowerUpController : MonoBehaviour
                 var eff = _active[i].effect;
                 _active.RemoveAt(i);
                 eff.OnRemove(_player);
+                GameEvents.RaisePowerUpRemoved(_player.PlayerIndex, (int)eff.Key);
 #if UNITY_EDITOR
                 Debug.Log($"[PowerUp {_player.PlayerIndex}] expired {eff.Key}");
 #endif
@@ -57,6 +66,7 @@ public class PowerUpController : MonoBehaviour
                     var old = _active[i].effect;
                     _active.RemoveAt(i);
                     old.OnRemove(_player);
+                    GameEvents.RaisePowerUpRemoved(_player.PlayerIndex, (int)old.Key);
                 }
             }
         }
@@ -67,6 +77,7 @@ public class PowerUpController : MonoBehaviour
             var oldest = _active[0].effect;
             _active.RemoveAt(0);
             oldest.OnRemove(_player);
+            GameEvents.RaisePowerUpRemoved(_player.PlayerIndex, (int)oldest.Key);
         }
 
         _active.Add(new Active { effect = effect, expireAt = Time.time + effect.Duration });
@@ -75,7 +86,8 @@ public class PowerUpController : MonoBehaviour
 #if UNITY_EDITOR
         Debug.Log($"[PowerUp {_player.PlayerIndex}] apply {effect.Key} dur={effect.Duration}s stack={_active.Count}");
 #endif
-        GameEvents.RaisePickupCollected(_player.PlayerIndex, (int)effect.Key);
+        GameEvents.RaisePickupCollected(
+            _player.PlayerIndex, (int)effect.Key, _player.transform.position);
         return true;
     }
 
@@ -96,6 +108,7 @@ public class PowerUpController : MonoBehaviour
                 var eff = _active[i].effect;
                 _active.RemoveAt(i);
                 eff.OnRemove(_player);
+                GameEvents.RaisePowerUpRemoved(_player.PlayerIndex, (int)eff.Key);
 #if UNITY_EDITOR
                 Debug.Log($"[PowerUp {_player.PlayerIndex}] absorbed by {eff.Key}");
 #endif
@@ -108,7 +121,11 @@ public class PowerUpController : MonoBehaviour
     public void ClearAll()
     {
         for (int i = _active.Count - 1; i >= 0; i--)
-            _active[i].effect.OnRemove(_player);
+        {
+            var eff = _active[i].effect;
+            eff.OnRemove(_player);
+            GameEvents.RaisePowerUpRemoved(_player.PlayerIndex, (int)eff.Key);
+        }
         _active.Clear();
     }
 }

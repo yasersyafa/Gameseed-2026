@@ -22,14 +22,18 @@ public class HitImpactVfx : MonoBehaviour
     private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
     private static readonly int ColorId     = Shader.PropertyToID("_Color");
 
+    private static readonly Color shieldColor = new(1.00f, 0.92f, 0.40f);
+
     private void OnEnable()
     {
-        GameEvents.OnPlayerHit += HandleHit;
+        GameEvents.OnPlayerHit      += HandleHit;
+        GameEvents.OnShieldAbsorbed += HandleShieldAbsorbed;
     }
 
     private void OnDisable()
     {
-        GameEvents.OnPlayerHit -= HandleHit;
+        GameEvents.OnPlayerHit      -= HandleHit;
+        GameEvents.OnShieldAbsorbed -= HandleShieldAbsorbed;
     }
 
     private void HandleHit(int idx, PlayerController controller)
@@ -39,6 +43,23 @@ public class HitImpactVfx : MonoBehaviour
         Vector3 dir = controller.LastMoveDirection;
         if (dir.sqrMagnitude < 0.001f) dir = controller.transform.forward;
         Burst(pos, -dir, defaultColor);
+    }
+
+    private void HandleShieldAbsorbed(int idx, Vector3 hitDir)
+    {
+        var ctrl = ResolvePlayer(idx);
+        if (ctrl == null) return;
+        Vector3 pos = ctrl.transform.position + Vector3.up * 0.6f;
+        Vector3 dir = hitDir.sqrMagnitude > 0.001f ? -hitDir.normalized : Vector3.forward;
+        Burst(pos, dir, shieldColor);
+    }
+
+    private static PlayerController ResolvePlayer(int idx)
+    {
+        var players = FindObjectsByType<PlayerController>(FindObjectsSortMode.None);
+        for (int i = 0; i < players.Length; i++)
+            if (players[i].PlayerIndex == idx) return players[i];
+        return null;
     }
 
     public void Burst(Vector3 pos, Vector3 forward, Color color)

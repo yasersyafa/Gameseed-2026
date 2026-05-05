@@ -16,6 +16,7 @@ public enum AudioCueId
     PlayerDeath,
     PlayerDash,
     ChargeLoop,
+    ShieldBreak,
 
     // ── Round / Match ──────────────────────────────────────────────────
     CountdownTick,

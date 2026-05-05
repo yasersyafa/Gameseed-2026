@@ -1889,7 +1889,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: a26d7ab1273304c66b56989ffb705c81, type: 2}
   spawnInterval: 7
   initialDelay: 5
-  maxConcurrent: 3
+  maxConcurrent: 1
 --- !u!1 &821714342
 GameObject:
   m_ObjectHideFlags: 0
@@ -4315,6 +4315,7 @@ GameObject:
   - component: {fileID: 1855521032}
   - component: {fileID: 1855521031}
   - component: {fileID: 1855521030}
+  - component: {fileID: 1855521034}
   m_Layer: 0
   m_Name: '[Juice]'
   m_TagString: Untagged
@@ -4405,6 +4406,23 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1855521034
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1855521029}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f6d3a8c4b5e34fac0df5061728395a91, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PickupCollectVfx
+  particleCount: 12
+  particleScale: 0.18
+  burstSpeed: 7
+  lifetime: 0.5
+  upwardBias: 0.6
 --- !u!1 &1857490998
 GameObject:
   m_ObjectHideFlags: 0

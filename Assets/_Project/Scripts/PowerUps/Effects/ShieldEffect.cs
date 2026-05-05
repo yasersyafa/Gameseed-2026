@@ -19,6 +19,11 @@ public class ShieldEffect : IPowerUpEffect
 
     public bool OnBeforeHit(PlayerController player, int killerIndex, Vector3 hitDir)
     {
-        return true;  // absorb hit, controller akan consume effect
+        // Fire-and-forget visual / audio cue. Controller consumes the effect
+        // after this returns true; PowerUpController also raises
+        // OnPowerUpRemoved so the player aura updates.
+        if (player != null)
+            GameEvents.RaiseShieldAbsorbed(player.PlayerIndex, hitDir);
+        return true;
     }
 }

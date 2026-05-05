@@ -78,6 +78,7 @@ public class AudioManager : MonoBehaviour
         GameEvents.OnGameOver           += HandleGameOver;
         GameEvents.OnPickupSpawned      += HandlePickupSpawned;
         GameEvents.OnPickupCollected    += HandlePickupCollected;
+        GameEvents.OnShieldAbsorbed     += HandleShieldAbsorbed;
         GameEvents.OnChargeStarted      += HandleChargeStarted;
         GameEvents.OnChargeReleased     += HandleChargeReleased;
     }
@@ -96,6 +97,7 @@ public class AudioManager : MonoBehaviour
         GameEvents.OnGameOver           -= HandleGameOver;
         GameEvents.OnPickupSpawned      -= HandlePickupSpawned;
         GameEvents.OnPickupCollected    -= HandlePickupCollected;
+        GameEvents.OnShieldAbsorbed     -= HandleShieldAbsorbed;
         GameEvents.OnChargeStarted      -= HandleChargeStarted;
         GameEvents.OnChargeReleased     -= HandleChargeReleased;
     }
@@ -237,7 +239,8 @@ public class AudioManager : MonoBehaviour
     private void HandleWallBounce()                          => Play(AudioCueId.BoomerangWallBounce);
     private void HandleParry(int playerIndex)                => Play(AudioCueId.BoomerangParry);
     private void HandlePickupSpawned()                       => Play(AudioCueId.PickupSpawn);
-    private void HandlePickupCollected(int idx, int key)     => Play(AudioCueId.PickupCollect);
+    private void HandlePickupCollected(int idx, int key, Vector3 worldPos) => Play(AudioCueId.PickupCollect);
+    private void HandleShieldAbsorbed(int idx, Vector3 hitDir)             => Play(AudioCueId.ShieldBreak);
     private void HandleChargeStarted(int idx)                => Play(AudioCueId.ChargeLoop);
     private void HandleChargeReleased(int idx, float c)      { /* loop self-stops on next throw cue */ }
 

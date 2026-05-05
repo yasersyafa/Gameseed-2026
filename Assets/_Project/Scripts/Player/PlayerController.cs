@@ -149,6 +149,8 @@ public class PlayerController : MonoBehaviour
             gameObject.AddComponent<ChargeTellVfx>();
         if (GetComponent<RespawnInvulnFlash>() == null && visual != null)
             gameObject.AddComponent<RespawnInvulnFlash>();
+        if (GetComponent<PowerUpAuraVfx>() == null)
+            gameObject.AddComponent<PowerUpAuraVfx>();
 
         _powerUps = GetComponent<PowerUpController>();
         if (_powerUps == null) _powerUps = gameObject.AddComponent<PowerUpController>();
@@ -279,6 +281,17 @@ public class PlayerController : MonoBehaviour
 
         // Power-ups bisa modify boomerang baru ini (Multi, Fire, Ice, Explosive)
         PowerUps?.OnBeforeThrow(boomScript);
+
+        // Status-tinted trail so the target can read incoming danger from afar.
+        switch (boomScript.OnHitStatus)
+        {
+            case StatusEffectType.Burning:
+                boomScript.SetTrailColor(new Color(1.00f, 0.40f, 0.10f));
+                break;
+            case StatusEffectType.Frozen:
+                boomScript.SetTrailColor(new Color(0.55f, 0.90f, 1.00f));
+                break;
+        }
 
 #if UNITY_EDITOR
         Debug.Log($"[Player {_playerIndex}] Throw charge={charge01:F2} force={force:F1} dist={distance:F1}");

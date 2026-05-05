@@ -30,12 +30,13 @@ public static class JuiceSetupAutomation
         EnsureComponent<PostFxJuice>(go);
         EnsureComponent<HitImpactVfx>(go);
         EnsureComponent<WinFlourish>(go);
+        EnsureComponent<PickupCollectVfx>(go);
 
         EditorUtility.SetDirty(go);
         EditorSceneManager.MarkSceneDirty(go.scene);
         EditorAssetUtils.Refresh();
         Selection.activeGameObject = go;
-        Debug.Log("[JuiceSetup] [Juice] GO ready with PostFxJuice + HitImpactVfx + WinFlourish.");
+        Debug.Log("[JuiceSetup] [Juice] GO ready with PostFxJuice + HitImpactVfx + WinFlourish + PickupCollectVfx.");
     }
 
     private static T EnsureComponent<T>(GameObject go) where T : Component
