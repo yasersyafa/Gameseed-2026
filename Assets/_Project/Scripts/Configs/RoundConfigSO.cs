@@ -16,6 +16,7 @@ public class RoundConfigSO : ScriptableObject
     public float respawnDelay      = 2f;
 
     [Header("Mode")]
+    public bool  suddenDeath       = false;  // overrides livesPerPlayer to 1 when true
     public bool  midRoundRespawn   = false;  // Boomerang Fu = false (eliminasi sampai round end)
     public bool  friendlyFire      = true;
     public float matchTimeLimit    = 0f;     // 0 = no limit

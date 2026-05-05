@@ -41,6 +41,7 @@ public class GameHUDView : MonoBehaviour
     private Button        _pauseButton;
     private Button        _resumeButton;
     private Button        _exitButton;
+    private Button        _restartButton;
 
     // Per-player state
     private readonly Dictionary<int, VisualElement> _playerRows    = new();
@@ -135,6 +136,7 @@ public class GameHUDView : MonoBehaviour
         _pauseButton      = _root.Q<Button>("pause-button");
         _resumeButton     = _root.Q<Button>("pause-resume");
         _exitButton       = _root.Q<Button>("pause-exit");
+        _restartButton    = _root.Q<Button>("game-over-restart");
     }
 
     private void ApplyFonts()
@@ -158,6 +160,8 @@ public class GameHUDView : MonoBehaviour
 
     private void WirePauseButtons()
     {
+        if (_restartButton != null) _restartButton.clicked += RestartMatch;
+
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
         if (_pauseButton  != null) _pauseButton.clicked  += Pause;
         if (_resumeButton != null) _resumeButton.clicked += Resume;
@@ -166,6 +170,13 @@ public class GameHUDView : MonoBehaviour
         // In release the pause UI is hidden + non-interactive.
         if (_pauseButton != null) _pauseButton.style.display = DisplayStyle.None;
 #endif
+    }
+
+    private void RestartMatch()
+    {
+        if (_round == null) return;
+        if (_gameOverPanel != null) _gameOverPanel.style.display = DisplayStyle.None;
+        _round.Restart();
     }
 
     // ── Pause ────────────────────────────────────────────────────────────────

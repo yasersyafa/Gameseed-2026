@@ -22,6 +22,7 @@ public static class BoomerangFuMenu
         SetupAudio();
         SetupHUD();
         SetupJuice();
+        SetupPowerUps();
         EditorAssetUtils.Refresh();
         Debug.Log("[BoomerangFu] Setup All complete.");
     }
@@ -59,6 +60,12 @@ public static class BoomerangFuMenu
     public static void SetupJuice()
     {
         JuiceSetupAutomation.RunAll();
+    }
+
+    [MenuItem(Root + "Setup/PowerUps (Scaffold SO Assets)")]
+    public static void SetupPowerUps()
+    {
+        PowerUpSetupAutomation.RunAll();
     }
 }
 #endif

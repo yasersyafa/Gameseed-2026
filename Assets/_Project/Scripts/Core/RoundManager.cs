@@ -163,4 +163,30 @@ public class RoundManager : MonoBehaviour
     public int   GetScore(int playerIndex)    => _scores?[playerIndex] ?? 0;
     public int   GetPointsToWin()             => pointsToWin;
     public int   GetCurrentRound()            => _currentRound;
+
+    /// <summary>
+    /// Reset match: zero scores, reopen iris, run StartRoundRoutine again.
+    /// Wired to the HUD game-over RESTART button.
+    /// </summary>
+    public void Restart()
+    {
+        if (_playerCount <= 0) return;
+        StopAllCoroutines();
+
+        _scores          = new int[_playerCount];
+        _currentRound    = 0;
+        _roundActive     = false;
+        _isTransitioning = false;
+
+        GameEvents.RaiseScoresUpdated(_scores);
+        StartCoroutine(RestartRoutine());
+    }
+
+    private IEnumerator RestartRoutine()
+    {
+        // Iris closed at game-over end. Reopen before launching first round
+        // so countdown isn't hidden behind the wipe.
+        if (_iris != null) yield return _iris.CoOpen();
+        InitRound(_playerCount);
+    }
 }

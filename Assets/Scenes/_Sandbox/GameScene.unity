@@ -1875,8 +1875,18 @@ MonoBehaviour:
   - {fileID: 325072281}
   - {fileID: 1492049832}
   pool:
+  - {fileID: 11400000, guid: a76b078fe37bc46aba6c4d4b3eb4e79a, type: 2}
+  - {fileID: 11400000, guid: 4468fbfc49c70417e9d04a4d7a1e04df, type: 2}
+  - {fileID: 11400000, guid: 608f3d39ccf5e43e1a4835ae971e7325, type: 2}
+  - {fileID: 11400000, guid: 34e771f4f1c8543ba812418782f241b2, type: 2}
+  - {fileID: 11400000, guid: d149af959827d495baf8f52cb15487b1, type: 2}
+  - {fileID: 11400000, guid: a93ed314e7fd34038bb76e5554168171, type: 2}
   - {fileID: 11400000, guid: cb2fcf8c1b1b8459a9538853d4930fb7, type: 2}
+  - {fileID: 11400000, guid: fd49eac011a1244d983a3043bc26d1e7, type: 2}
+  - {fileID: 11400000, guid: 500b39bf4188a49068fc1ee0291c7fb8, type: 2}
   - {fileID: 11400000, guid: d167699b6befa4a66a4dffbb6797fdbf, type: 2}
+  - {fileID: 11400000, guid: 82b5bdadacf1b4ea4ba65343363c8a74, type: 2}
+  - {fileID: 11400000, guid: a26d7ab1273304c66b56989ffb705c81, type: 2}
   spawnInterval: 7
   initialDelay: 5
   maxConcurrent: 3
@@ -3905,6 +3915,9 @@ MonoBehaviour:
   parryFovTime: 0.18
   elimFovDelta: -12
   elimFovTime: 0.45
+  stingerFovDelta: -22
+  stingerFovTime: 1.2
+  stingerShake: 4.5
 --- !u!114 &1542131971
 MonoBehaviour:
   m_ObjectHideFlags: 0

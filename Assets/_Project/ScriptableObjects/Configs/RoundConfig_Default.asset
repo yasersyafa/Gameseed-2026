@@ -17,6 +17,7 @@ MonoBehaviour:
   countdownDuration: 3
   roundEndDelay: 2
   respawnDelay: 2
+  suddenDeath: 0
   midRoundRespawn: 0
   friendlyFire: 1
   matchTimeLimit: 0

@@ -26,10 +26,11 @@
 
         <ui:VisualElement name="world-layer" class="zone zone-world" picking-mode="Ignore" />
 
-        <ui:VisualElement name="game-over-panel" class="brutal-card card-gameover" picking-mode="Ignore">
+        <ui:VisualElement name="game-over-panel" class="brutal-card card-gameover">
             <ui:VisualElement class="brutal-shadow" />
-            <ui:VisualElement name="gameover-content" class="brutal-content dustypink">
+            <ui:VisualElement name="gameover-content" class="brutal-content dustypink pause-content">
                 <ui:Label name="game-over-label" text="WINNER!" class="display-bold gameover-text" />
+                <ui:Button name="game-over-restart" text="RESTART" class="brutal-button mint pause-action" />
             </ui:VisualElement>
         </ui:VisualElement>
 

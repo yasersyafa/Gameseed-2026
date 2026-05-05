@@ -25,6 +25,11 @@ public class CinemachineCameraManager : MonoBehaviour
     [SerializeField] private float elimFovDelta  = -12f;
     [SerializeField] private float elimFovTime   = 0.45f;
 
+    [Header("Last-Kill Stinger (OnGameOver)")]
+    [SerializeField] private float stingerFovDelta = -22f;
+    [SerializeField] private float stingerFovTime  = 1.2f;
+    [SerializeField] private float stingerShake    = 4.5f;
+
     private SettingsManager _settings;
     private float           _baseFov;
     private Coroutine       _fovRoutine;
@@ -49,6 +54,7 @@ public class CinemachineCameraManager : MonoBehaviour
         GameEvents.OnBoomerangParried += HandleParry;
         GameEvents.OnBoomerangCaught  += HandleCatch;
         GameEvents.OnBoomerangWallBounce += HandleWallBounce;
+        GameEvents.OnGameOver         += HandleGameOver;
     }
 
     private void OnDisable()
@@ -59,6 +65,7 @@ public class CinemachineCameraManager : MonoBehaviour
         GameEvents.OnBoomerangParried -= HandleParry;
         GameEvents.OnBoomerangCaught  -= HandleCatch;
         GameEvents.OnBoomerangWallBounce -= HandleWallBounce;
+        GameEvents.OnGameOver         -= HandleGameOver;
     }
 
     private void HandlePlayerEliminated(int index, PlayerController controller)
@@ -81,6 +88,15 @@ public class CinemachineCameraManager : MonoBehaviour
     }
     private void HandleCatch(int index)         => Shake(ShakeIntensity.Small);
     private void HandleWallBounce()             => Shake(ShakeIntensity.Small);
+
+    private void HandleGameOver(int winnerIndex)
+    {
+        // Cinematic stinger: deeper FOV punch + extra shake. The target group
+        // already auto-frames the lone surviving winner since losers were
+        // removed on elim, so the lens just zooms toward them.
+        ShakeCamera(stingerShake);
+        PunchFov(stingerFovDelta, stingerFovTime);
+    }
 
     public void PunchFov(float delta, float duration)
     {

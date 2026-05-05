@@ -39,7 +39,7 @@ public class LivesSystem : MonoBehaviour
     private void ApplyConfigFromSO()
     {
         if (configSO == null) return;
-        livesPerPlayer = configSO.livesPerPlayer;
+        livesPerPlayer = configSO.suddenDeath ? 1 : configSO.livesPerPlayer;
         respawnDelay   = configSO.respawnDelay;
     }
 

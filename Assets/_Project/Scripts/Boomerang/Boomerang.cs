@@ -61,7 +61,7 @@ public class Boomerang : MonoBehaviour
 
     private void Awake()
     {
-        ApplyStatsFromSO();
+        ApplyConfigFromSO();
 
         _rb = GetComponent<Rigidbody>();
         _rb.useGravity      = false;
@@ -96,7 +96,7 @@ public class Boomerang : MonoBehaviour
         }
     }
 
-    private void ApplyStatsFromSO()
+    private void ApplyConfigFromSO()
     {
         if (statsSO == null) return;
         maxDistance          = statsSO.maxDistance;

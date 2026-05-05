@@ -99,6 +99,17 @@ Newest first.
   `Tools > Boomerang Fu > Setup/Juice (Scene Listeners)`. All
   `SerializeField` knobs (vignette / chromatic intensities + durations,
   burst counts, confetti palette) are now inspector-editable.
+- Renamed `Boomerang.ApplyStatsFromSO` and
+  `PlayerController.ApplyStatsFromSO` to `ApplyConfigFromSO`,
+  matching the convention used by `RoundManager`, `LivesSystem`,
+  and `IrisTransition`. One name, one pattern.
+- `CinemachineCameraManager` subscribes to `OnGameOver` and runs a
+  cinematic stinger — deeper FOV punch (-22° / 1.2s) plus a
+  larger shake. Target group already drops eliminated players, so
+  the lens auto-zooms toward the lone surviving winner.
+- `LivesSystem.ApplyConfigFromSO` honours
+  `RoundConfigSO.suddenDeath` — when true, `livesPerPlayer` is
+  forced to 1 regardless of the SO's explicit lives count.
 
 ### Removed
 - `GameEvents.OnLivesChanged` (no consumers since the HUD lives
@@ -193,6 +204,30 @@ Newest first.
   Listeners)`. Idempotent — finds or creates `[Juice]` GameObject in
   the active scene and `Undo.AddComponent`s `PostFxJuice` +
   `HitImpactVfx` + `WinFlourish`. Bundled into `Setup All`.
+- Editor automation: `Tools > Boomerang Fu > Setup/PowerUps
+  (Scaffold SO Assets)`. Iterates the `PowerUpKey` enum and creates
+  a `PowerUp_{Key}.asset` for every missing entry under
+  `Assets/_Project/ScriptableObjects/Powerups/`, populating tint /
+  duration / mutex / display name. Skip-if-exists, so hand-tuned
+  Fire / Shield / Multi assets are preserved. Bundled into
+  `Setup All`. Effect *behaviour* still lives in `PowerUpFactory` —
+  the eight stub keys (`Caffeinated`, `DashThroughWalls`, `Teleport`,
+  `Explosive`, `Extra`, `Disguise`, `Telekinesis`, `Decoy`) now have
+  pickable assets even though their `StubPowerUp` impl is still a
+  no-op.
+- `RoundConfigSO.suddenDeath` boolean — flip it to switch the match
+  from N-stocks-with-respawn to Boomerang Fu's 1-life knockout.
+- `RoundManager.Restart()` — wired to the new HUD `RESTART` button
+  on the game-over panel. Zeroes scores, resets transition flags,
+  reopens the iris, runs `StartRoundRoutine`. Unblocks the iteration
+  loop without leaving Play mode.
+- HUD game-over modal gained a `RESTART` button (mint, brutal-button
+  styling). `GameHUDView.RestartMatch` hides the panel and calls
+  `RoundManager.Restart`. The panel's `picking-mode="Ignore"` was
+  removed so the button receives clicks.
+- `CinemachineCameraManager` exposes
+  `stingerFovDelta` / `stingerFovTime` / `stingerShake` `SerializeField`s
+  for tuning the last-kill cinematic.
 
 ## 2026-05-01
 

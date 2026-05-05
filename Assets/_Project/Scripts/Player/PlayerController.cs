@@ -97,7 +97,7 @@ public class PlayerController : MonoBehaviour
     #region Unity Lifecycle
     private void Awake()
     {
-        ApplyStatsFromSO();
+        ApplyConfigFromSO();
 
         Rb = GetComponent<Rigidbody>();
         Rb.freezeRotation = true;
@@ -163,7 +163,7 @@ public class PlayerController : MonoBehaviour
             gameObject.AddComponent<AimIndicator>();
     }
 
-    private void ApplyStatsFromSO()
+    private void ApplyConfigFromSO()
     {
         if (statsSO == null) return;
         moveSpeed     = statsSO.moveSpeed;
