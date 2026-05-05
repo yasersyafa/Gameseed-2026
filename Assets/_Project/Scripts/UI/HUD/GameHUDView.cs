@@ -34,14 +34,10 @@ public class GameHUDView : MonoBehaviour
     private VisualElement _countdownZone;
     private VisualElement _countdownContent;
     private Label         _countdownLabel;
-    private VisualElement _gameOverPanel;
-    private VisualElement _gameOverContent;
-    private Label         _gameOverLabel;
     private VisualElement _pauseModal;
     private Button        _pauseButton;
     private Button        _resumeButton;
     private Button        _exitButton;
-    private Button        _restartButton;
 
     // Per-player state
     private readonly Dictionary<int, VisualElement> _playerRows    = new();
@@ -106,7 +102,6 @@ public class GameHUDView : MonoBehaviour
     {
         GameEvents.OnCountdownTick    += HandleCountdown;
         GameEvents.OnRoundStarted     += HandleRoundStarted;
-        GameEvents.OnGameOver         += HandleGameOver;
         GameEvents.OnScoresUpdated    += HandleScoresUpdated;
         GameEvents.OnPlayerEliminated += HandleElim;
     }
@@ -115,7 +110,6 @@ public class GameHUDView : MonoBehaviour
     {
         GameEvents.OnCountdownTick    -= HandleCountdown;
         GameEvents.OnRoundStarted     -= HandleRoundStarted;
-        GameEvents.OnGameOver         -= HandleGameOver;
         GameEvents.OnScoresUpdated    -= HandleScoresUpdated;
         GameEvents.OnPlayerEliminated -= HandleElim;
     }
@@ -129,14 +123,10 @@ public class GameHUDView : MonoBehaviour
         _countdownZone    = _root.Q<VisualElement>("center-countdown");
         _countdownContent = _root.Q<VisualElement>("countdown-content");
         _countdownLabel   = _root.Q<Label>("countdown-label");
-        _gameOverPanel    = _root.Q<VisualElement>("game-over-panel");
-        _gameOverContent  = _root.Q<VisualElement>("gameover-content");
-        _gameOverLabel    = _root.Q<Label>("game-over-label");
         _pauseModal       = _root.Q<VisualElement>("pause-modal");
         _pauseButton      = _root.Q<Button>("pause-button");
         _resumeButton     = _root.Q<Button>("pause-resume");
         _exitButton       = _root.Q<Button>("pause-exit");
-        _restartButton    = _root.Q<Button>("game-over-restart");
     }
 
     private void ApplyFonts()
@@ -160,8 +150,6 @@ public class GameHUDView : MonoBehaviour
 
     private void WirePauseButtons()
     {
-        if (_restartButton != null) _restartButton.clicked += RestartMatch;
-
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
         if (_pauseButton  != null) _pauseButton.clicked  += Pause;
         if (_resumeButton != null) _resumeButton.clicked += Resume;
@@ -170,13 +158,6 @@ public class GameHUDView : MonoBehaviour
         // In release the pause UI is hidden + non-interactive.
         if (_pauseButton != null) _pauseButton.style.display = DisplayStyle.None;
 #endif
-    }
-
-    private void RestartMatch()
-    {
-        if (_round == null) return;
-        if (_gameOverPanel != null) _gameOverPanel.style.display = DisplayStyle.None;
-        _round.Restart();
     }
 
     // ── Pause ────────────────────────────────────────────────────────────────
@@ -355,22 +336,9 @@ public class GameHUDView : MonoBehaviour
         SpawnElimPopup(controller.transform.position + Vector3.up * 1.5f);
     }
 
-    private void HandleGameOver(int winnerIndex)
-    {
-        if (_gameOverPanel == null || _gameOverLabel == null) return;
-        _gameOverLabel.text = $"P{winnerIndex + 1} WINS!";
-        _gameOverPanel.style.display = DisplayStyle.Flex;
-        if (winnerIndex >= 0 && _gameOverContent != null)
-        {
-            _gameOverContent.RemoveFromClassList("dustypink");
-            _gameOverContent.RemoveFromClassList("peach");
-            _gameOverContent.RemoveFromClassList("sky");
-            _gameOverContent.RemoveFromClassList("mint");
-            _gameOverContent.RemoveFromClassList("lemon");
-            _gameOverContent.AddToClassList(PlayerTintClasses[winnerIndex % PlayerTintClasses.Length]);
-        }
-        PunchScale(_gameOverPanel, 1f, 0.55f, fromScale: 0.4f);
-    }
+    // Game-over reveal lives on a separate higher-sortingOrder UIDocument
+    // (see GameOverView). Keeps HUD behind the iris while letting the
+    // winner card paint on top of the closed wipe.
 
     // ── ELIM popup + off-screen arrow ────────────────────────────────────────
     private void SpawnElimPopup(Vector3 worldPos)

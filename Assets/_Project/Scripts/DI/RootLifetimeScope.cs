@@ -22,6 +22,7 @@ public class RootLifetimeScope : LifetimeScope
         builder.RegisterComponentInHierarchy<SettingsManager>();
         builder.RegisterComponentInHierarchy<RumbleManager>();
         builder.RegisterComponentInHierarchy<GameHUDView>();
+        builder.RegisterComponentInHierarchy<GameOverView>();
 
         if (!_sceneUnloadHooked)
         {

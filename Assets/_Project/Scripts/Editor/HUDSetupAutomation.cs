@@ -19,59 +19,72 @@ using UnityEngine.UIElements;
 /// </summary>
 public static class HUDSetupAutomation
 {
-    private const string HudFolder         = "Assets/_Project/UI/HUD";
-    private const string ConfigsFolder     = "Assets/_Project/ScriptableObjects/Configs";
-    private const string FontsFolder       = "Assets/_Project/Fonts";
-    private const string PanelSettingsPath = HudFolder + "/HUDPanelSettings.asset";
-    private const string HudViewUxmlPath   = HudFolder + "/HUDView.uxml";
-    private const string PlayerRowUxmlPath = HudFolder + "/PlayerRowTemplate.uxml";
-    private const string HudUssPath        = HudFolder + "/HUDStyle.uss";
-    private const string FontLibraryPath   = HudFolder + "/FontLibrary.asset";
-    private const string DisplayFontPath   = FontsFolder + "/ArchivoBlack-Regular.ttf";
-    private const string MonoFontPath      = FontsFolder + "/JetBrainsMono-Bold.ttf";
-    private const string IrisConfigPath    = ConfigsFolder + "/IrisConfig.asset";
-    private const string HudGoName         = "[GameHUD]";
-    private const string EventSystemGoName = "[EventSystem]";
+    private const string HudFolder              = "Assets/_Project/UI/HUD";
+    private const string ConfigsFolder          = "Assets/_Project/ScriptableObjects/Configs";
+    private const string FontsFolder            = "Assets/_Project/Fonts";
+    private const string PanelSettingsPath      = HudFolder + "/HUDPanelSettings.asset";
+    private const string GameOverPanelSettingsPath = HudFolder + "/GameOverPanelSettings.asset";
+    private const string HudViewUxmlPath        = HudFolder + "/HUDView.uxml";
+    private const string PlayerRowUxmlPath      = HudFolder + "/PlayerRowTemplate.uxml";
+    private const string GameOverViewUxmlPath   = HudFolder + "/GameOverView.uxml";
+    private const string HudUssPath             = HudFolder + "/HUDStyle.uss";
+    private const string FontLibraryPath        = HudFolder + "/FontLibrary.asset";
+    private const string DisplayFontPath        = FontsFolder + "/ArchivoBlack-Regular.ttf";
+    private const string MonoFontPath           = FontsFolder + "/JetBrainsMono-Bold.ttf";
+    private const string IrisConfigPath         = ConfigsFolder + "/IrisConfig.asset";
+    private const string HudGoName              = "[GameHUD]";
+    private const string GameOverGoName         = "[GameOverOverlay]";
+    private const string EventSystemGoName      = "[EventSystem]";
+
+    // sortingOrder layering: HUD (100) → iris Canvas (200) → game-over (300).
+    // Keeps round-time HUD behind the iris wipe; game-over panel reveals on
+    // top of the fully-closed iris.
+    private const int HudSortingOrder       = 100;
+    private const int GameOverSortingOrder  = 300;
 
     public static void RunAll()
     {
         EditorAssetUtils.EnsureFolder(HudFolder);
 
-        var panelSettings = EnsurePanelSettings();
+        var hudPanelSettings      = EnsurePanelSettings(PanelSettingsPath, HudSortingOrder);
+        var gameOverPanelSettings = EnsurePanelSettings(GameOverPanelSettingsPath, GameOverSortingOrder);
+
         var viewUxml      = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(HudViewUxmlPath);
         var rowUxml       = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(PlayerRowUxmlPath);
+        var gameOverUxml  = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(GameOverViewUxmlPath);
         var uss           = AssetDatabase.LoadAssetAtPath<StyleSheet>(HudUssPath);
 
-        if (viewUxml == null || rowUxml == null || uss == null)
+        if (viewUxml == null || rowUxml == null || gameOverUxml == null || uss == null)
         {
             Debug.LogError(
-                $"[HUDSetup] Missing UXML/USS under {HudFolder}. " +
-                "Expected HUDView.uxml, PlayerRowTemplate.uxml, HUDStyle.uss.");
+                $"[HUDSetup] Missing UXML/USS under {HudFolder}. Expected " +
+                "HUDView.uxml, PlayerRowTemplate.uxml, GameOverView.uxml, HUDStyle.uss.");
             return;
         }
 
         var fontLibrary = EnsureFontLibrary();
-        var hudGo = EnsureHudGameObject(panelSettings, viewUxml, rowUxml, uss, fontLibrary);
+        var hudGo       = EnsureHudGameObject(hudPanelSettings, viewUxml, rowUxml, uss, fontLibrary);
+        var overlayGo   = EnsureGameOverGameObject(gameOverPanelSettings, gameOverUxml, uss, fontLibrary);
         EnsureEventSystem();
 
         EditorSceneManager.MarkSceneDirty(hudGo.scene);
         EditorAssetUtils.Refresh();
         Selection.activeGameObject = hudGo;
-        Debug.Log("[HUDSetup] HUD scene + asset refs ready.");
+        Debug.Log("[HUDSetup] HUD + GameOver overlay + asset refs ready.");
     }
 
-    private static PanelSettings EnsurePanelSettings()
+    private static PanelSettings EnsurePanelSettings(string path, int sortingOrder)
     {
-        var ps = AssetDatabase.LoadAssetAtPath<PanelSettings>(PanelSettingsPath);
+        var ps = AssetDatabase.LoadAssetAtPath<PanelSettings>(path);
         if (ps == null)
         {
             ps = ScriptableObject.CreateInstance<PanelSettings>();
-            AssetDatabase.CreateAsset(ps, PanelSettingsPath);
+            AssetDatabase.CreateAsset(ps, path);
         }
         ps.scaleMode           = PanelScaleMode.ScaleWithScreenSize;
         ps.referenceResolution = new Vector2Int(1920, 1080);
         ps.match               = 0.5f;
-        ps.sortingOrder        = 100;
+        ps.sortingOrder        = sortingOrder;
         EditorUtility.SetDirty(ps);
         return ps;
     }
@@ -123,6 +136,35 @@ public static class HUDSetupAutomation
         EnsureComponent<SettingsScreen>(existing);
         var iris = EnsureComponent<IrisTransition>(existing);
         WireIrisConfig(iris);
+
+        EditorUtility.SetDirty(existing);
+        return existing;
+    }
+
+    private static GameObject EnsureGameOverGameObject(
+        PanelSettings ps,
+        VisualTreeAsset uxml,
+        StyleSheet uss,
+        FontLibrary fontLibrary)
+    {
+        var existing = FindInActiveScene(GameOverGoName);
+        if (existing == null)
+        {
+            existing = new GameObject(GameOverGoName);
+            Undo.RegisterCreatedObjectUndo(existing, "Create [GameOverOverlay]");
+        }
+
+        var doc = EnsureComponent<UIDocument>(existing);
+        doc.panelSettings   = ps;
+        doc.visualTreeAsset = uxml;
+
+        var view = EnsureComponent<GameOverView>(existing);
+        var so = new SerializedObject(view);
+        var ussProp  = so.FindProperty("hudStyleSheet");
+        var fontProp = so.FindProperty("fontLibrary");
+        if (ussProp  != null) ussProp.objectReferenceValue  = uss;
+        if (fontProp != null) fontProp.objectReferenceValue = fontLibrary;
+        so.ApplyModifiedProperties();
 
         EditorUtility.SetDirty(existing);
         return existing;

@@ -81,6 +81,12 @@ public class RoundManager : MonoBehaviour
         if (_iris != null && _currentRound > 1)
             yield return _iris.CoOpen();
 
+        // Raise round-started before the countdown so the HUD shows
+        // "ROUND N" while 3-2-1-GO! plays, instead of catching up afterward.
+        // PickupSpawner's spawn loop has its own initialDelay so starting it
+        // here doesn't drop a pickup mid-countdown.
+        GameEvents.RaiseRoundStarted(_currentRound);
+
         for (int i = Mathf.RoundToInt(countdownDuration); i > 0; i--)
         {
             GameEvents.RaiseCountdownTick(i);
@@ -95,8 +101,6 @@ public class RoundManager : MonoBehaviour
         SetAllPlayersFreeze(false);
         _roundActive     = true;
         _isTransitioning = false;
-
-        GameEvents.RaiseRoundStarted(_currentRound);
     }
 
     public void OnRoundEnd(int winnerIndex)

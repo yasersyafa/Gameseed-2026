@@ -145,11 +145,41 @@ public class IrisTransition : MonoBehaviour
 
     // ── Event handlers ────────────────────────────────────────────────────────
 
+    private Coroutine _gameOverRoutine;
+
     private void HandleGameOver(int winnerIndex)
     {
+        // Iris missing (shader not found): no transition possible — fire the
+        // event immediately so the HUD reveal still happens.
+        if (_mat == null)
+        {
+            GameEvents.RaiseIrisClosed();
+            return;
+        }
+
         Vector2 center = ResolveWinnerCenter(winnerIndex);
-        CloseIris(center, closeDuration * gameOverDurationMul);
-        // Stay closed — match end.
+        if (_gameOverRoutine != null) StopCoroutine(_gameOverRoutine);
+        _gameOverRoutine = StartCoroutine(GameOverCloseRoutine(center));
+    }
+
+    private IEnumerator GameOverCloseRoutine(Vector2 center)
+    {
+        UpdateAspect();
+        SetCenter(center);
+        _mat.DOKill();
+
+        yield return YieldCollection.WaitForSecondsRealtime(closeDelay);
+
+        var tw = DOVirtual.Float(
+            _mat.GetFloat(RadiusId), closedRadius,
+            closeDuration * gameOverDurationMul, SetRadius)
+            .SetEase(Ease.InQuad)
+            .SetUpdate(true);
+
+        yield return tw.WaitForCompletion();
+
+        GameEvents.RaiseIrisClosed();
+        _gameOverRoutine = null;
     }
 
     private Vector2 ResolveWinnerCenter(int winnerIndex)

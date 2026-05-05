@@ -54,6 +54,26 @@ Newest first.
   GO never disabled, so its `OnEnable` never re-ran to re-subscribe.
   Migrated to scene-baked `[Juice]` (see Added) so subscribe/unsubscribe
   follows scene lifecycle.
+- Game-over `WINNER!` card + `RESTART` button were invisible — iris
+  Canvas (`sortingOrder = 200`) painted over the HUD's UIDocument
+  (`sortingOrder = 100`), and the panel was being shown
+  synchronously with `OnGameOver` *before* the iris finished its
+  close animation. Two-part fix:
+  1. Render order — split game-over into its own UIDocument /
+     `GameOverPanelSettings.asset` at `sortingOrder = 300`. HUD
+     stays at 100 so it sits *behind* the iris wipe during normal
+     round transitions.
+  2. Timing — `IrisTransition.HandleGameOver` now drives a
+     coroutine that yields the close tween then raises a new
+     `GameEvents.OnIrisClosed` event. `GameOverView.HandleGameOver`
+     stashes the winner index; `GameOverView.HandleIrisClosed`
+     reveals the panel only after the iris is fully closed.
+- Round label lagged the countdown — `RaiseRoundStarted` fired
+  *after* the 3-2-1-GO! sequence, so the HUD `ROUND N` only
+  updated once gameplay armed. Now raised before the countdown
+  loop. `PickupSpawner.SpawnLoop` already has its own
+  `initialDelay` so starting earlier doesn't drop a pickup
+  mid-countdown.
 
 ### Changed
 - `RoundManager` drives `IrisTransition` via coroutines (`CoCloseAndHold`,
@@ -110,6 +130,18 @@ Newest first.
 - `LivesSystem.ApplyConfigFromSO` honours
   `RoundConfigSO.suddenDeath` — when true, `livesPerPlayer` is
   forced to 1 regardless of the SO's explicit lives count.
+- HUD `sortingOrder` reverted to 100 (behind iris). New
+  `[GameOverOverlay]` GameObject hosts a separate UIDocument at
+  `sortingOrder = 300` (above iris). HUD elements (player rows,
+  round card, ELIM popups, pause modal) stay hidden behind the
+  iris during round transitions; only the winner card + RESTART
+  button paint on top of the closed iris.
+- `GameHUDView` lost its game-over reveal responsibilities —
+  `_gameOverPanel` / `_gameOverContent` / `_gameOverLabel` /
+  `_pendingWinner` / `_restartButton` and the `HandleGameOver` /
+  `HandleIrisClosed` / `RestartMatch` methods migrated to
+  `GameOverView`. Cleaner separation, no shared state across
+  panels.
 
 ### Removed
 - `GameEvents.OnLivesChanged` (no consumers since the HUD lives
@@ -228,6 +260,17 @@ Newest first.
 - `CinemachineCameraManager` exposes
   `stingerFovDelta` / `stingerFovTime` / `stingerShake` `SerializeField`s
   for tuning the last-kill cinematic.
+- `GameEvents.OnIrisClosed` event raised by `IrisTransition` when
+  its game-over close tween completes. Lets the new
+  `GameOverView` defer its reveal until the wipe is fully closed.
+  Edge case: if the iris shader is missing (`_mat == null`), the
+  event raises immediately so the reveal still happens.
+- `GameOverView` MonoBehaviour + `GameOverView.uxml` +
+  `GameOverPanelSettings.asset`. Standalone overlay carrying just
+  the winner card + RESTART button, mounted on `[GameOverOverlay]`
+  via `Tools > Boomerang Fu > Setup/HUD`. Registered in
+  `RootLifetimeScope` so `[Inject] Construct(RoundManager)` fires
+  for the RESTART hookup.
 
 ## 2026-05-01
 

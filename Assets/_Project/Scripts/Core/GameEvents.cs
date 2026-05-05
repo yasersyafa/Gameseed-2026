@@ -58,6 +58,9 @@ public static class GameEvents
     /// <summary>Boomerang ricochet ke wall.</summary>
     public static event Action OnBoomerangWallBounce;
 
+    /// <summary>Iris transition reached fully-closed state (game-over only).</summary>
+    public static event Action OnIrisClosed;
+
     /// <summary>Pickup spawned di arena.</summary>
     public static event Action OnPickupSpawned;
 
@@ -111,6 +114,9 @@ public static class GameEvents
     public static void RaiseBoomerangWallBounce()
         => OnBoomerangWallBounce?.Invoke();
 
+    public static void RaiseIrisClosed()
+        => OnIrisClosed?.Invoke();
+
     public static void RaisePickupSpawned()
         => OnPickupSpawned?.Invoke();
 
@@ -138,6 +144,7 @@ public static class GameEvents
         OnChargeReleased       = null;
         OnBoomerangParried     = null;
         OnBoomerangWallBounce  = null;
+        OnIrisClosed           = null;
         OnPickupSpawned        = null;
         OnPickupCollected      = null;
     }
